@@ -1,0 +1,38 @@
+{
+  "name": "persisted-logs",
+  "version": "1.0.0",
+  "description": "Concept is a logging library that is always persistant.",
+  "main": "src/app.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "log",
+    "logging",
+    "persistance",
+    "search",
+    "no-network",
+    "nonnetwork",
+    "networkless",
+    "serverless"
+  ],
+  "author": "Frank Villasenor <frank@theOpenSourceU.org>",
+  "license": "MIT",
+  "dependencies": {
+    "quick.db": "^9.1.7",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "latest",
+
+    "prettier": "latest",
+    "ts-jest": "latest",
+    "typescript": "latest",
+
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2"
+
+  }
+}
