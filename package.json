@@ -1,7 +1,7 @@
 {
   "name": "persisted-logs",
   "version": "1.0.0",
-  "description": "Concept is a logging library that is always persistant.",
+  "description": "Concept is a logging library that is always persistent.",
   "main": "src/app.ts",
   "scripts": {
     "test": "jest"
