@@ -9,7 +9,6 @@ function createApp(options: AppOptions): AppInterface {
   const {debug, warn, log, error} = console;
   const sql = new Sqlite3Logger(options?.dbPath || "", true);
 
-
   return {
     restoreLabel() {
       label = labelStack.pop() || 'root';
@@ -28,7 +27,8 @@ function createApp(options: AppOptions): AppInterface {
     },
     log(message: string){
 
-      void sql.Log(logLevel, label, message).catch(console.error);
+      void sql.Log(logLevel, label, message).catch(console.error)
+
 
       switch(logLevel){
         case 'debug':

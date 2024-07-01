@@ -4,7 +4,8 @@
   "description": "Concept is a logging library that is always persistent.",
   "main": "src/app.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsup"
   },
   "keywords": [
     "log",
@@ -19,20 +20,17 @@
   "author": "Frank Villasenor <frank@theOpenSourceU.org>",
   "license": "MIT",
   "dependencies": {
-    "quick.db": "^9.1.7",
+    "@swc/core": "^1.6.6",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.24",
     "jest": "latest",
-
     "prettier": "latest",
     "ts-jest": "latest",
-    "typescript": "latest",
-
     "ts-node": "^10.9.2",
-    "tsup": "^8.0.2"
-
+    "tsup": "^8.0.2",
+    "typescript": "latest"
   }
 }
