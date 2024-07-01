@@ -8,12 +8,12 @@ describe('FastSqlite3Logger', () => {
   });
 
   test('logs as expected', () => {
-    db.Log('info', 'root', 'test');
+    db.Log('info', 'expected', 'logs as expected test');
   });
 
   test('logs very, very fast', () => {
     for(let i = 0; i < 10000; i++){
-      db.Log('info', 'root', `test-${i}-${i.toString(32)}`);
+      db.Log('info', 'fast', `logs very, very fast test-${i}-${i.toString(32)}`);
     }
   });
 });

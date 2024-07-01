@@ -1,13 +1,13 @@
 
 import {LogLevelType, AppInterface, AppOptions} from "./types";
-import Sqlite3Logger from "./Sqlite3Logger";
+import FastSqlite3Logger from "./datastore/FastSqlite3Logger";
 
 function createApp(options: AppOptions): AppInterface {
-  let label: string = 'root';
-  let logLevel: LogLevelType = 'info';
+  let label: string = options.defaultLabel || 'root';
+  let logLevel: LogLevelType = options.defaultLogLevel || 'info';
   const labelStack = [] as string[];
   const {debug, warn, log, error} = console;
-  const sql = new Sqlite3Logger(options?.dbPath || "", true);
+  const db = new FastSqlite3Logger('logs.db', false);
 
   return {
     restoreLabel() {
@@ -17,8 +17,6 @@ function createApp(options: AppOptions): AppInterface {
       labelStack.push(label);
       label = lbl;
     },
-
-
     setLogLevel(ll: LogLevelType){
       logLevel = ll;
     },
@@ -26,9 +24,11 @@ function createApp(options: AppOptions): AppInterface {
       logLevel = 'info';
     },
     log(message: string){
-
-      void sql.Log(logLevel, label, message).catch(console.error)
-
+      try {
+        db.Log(logLevel, label, message);
+      } catch(er) {
+        error('could not log to db', er)
+      }
 
       switch(logLevel){
         case 'debug':
