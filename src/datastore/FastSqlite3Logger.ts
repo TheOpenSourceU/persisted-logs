@@ -158,9 +158,10 @@ export default class FastSqlite3Logger implements ILoggerDatastore {
     await Promise.all(this.pendingPromises);
     let len = 0;
     do {
+      console.log('waiting for promises', this.pendingPromises.length);
       len = this.pendingPromises.length;
       await Promise.all(this.pendingPromises);
-    } while(len === this.pendingPromises.length);
+    } while(len !== this.pendingPromises.length);
     this.pendingPromises = [];
   }
 }

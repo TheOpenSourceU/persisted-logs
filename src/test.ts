@@ -8,6 +8,7 @@ async function test() {
 
   f.setLogLevel('debug');
 
+  f.Info(`db-file`, `logs-${d}.db`)
   f.Debug('debug-testing', 'this is a debug test');
   f.Info('info-testing', 'this is an info test');
 
