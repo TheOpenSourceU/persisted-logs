@@ -5,7 +5,9 @@
   "main": "src/app.ts",
   "scripts": {
     "test": "jest",
-    "build": "tsup"
+    "build": "tsup",
+    "prelog": "npm run build",
+    "log": "node dist/test.js"
   },
   "keywords": [
     "log",

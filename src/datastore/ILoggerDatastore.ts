@@ -1,8 +1,6 @@
 import { LogLevelType } from "../types";
 
 export interface ILoggerDatastore {
-  Bootstrap(): Promise<void> | void;
-
   /**
    * Records the log to the database.
    * @param level
@@ -10,5 +8,12 @@ export interface ILoggerDatastore {
    * @param message
    * @constructor
    */
-  Log(level: LogLevelType, label: string, message: string): Promise<void>|void;
+  Log(level: LogLevelType, label: string, message: string): void;
+
+  Warn(label: string, message: string): void;
+  Info(label: string, message: string): void;
+  Error(label: string, message: string): void;
+  Debug(label: string, message: string): void;
+
+  wait(): Promise<void>;
 }

@@ -1,10 +1,14 @@
 
 export type LogLevelType = "warn" | 'info' | 'error' | 'debug';
+export type DataStoreType = ":memory:" | "app-log.db" | string;
+
 export type AppOptions = {
   defaultLabel?: string;
   defaultLogLevel?: LogLevelType;
   dbPath?:string; // default is __dirname + '/logs'
+  dataStore?: DataStoreType;
 }
+
 export type AppInterface = {
   // setLabel: (label: string) => void;
   // clearLabel: () => void;
