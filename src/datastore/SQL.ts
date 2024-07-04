@@ -27,6 +27,6 @@ const logLevelData: SqlString = `
 `;
 
 const SQL ={
-  logTable, logLevel: logLevelTable, logLevelData
+  logTable, logLevelTable, logLevelData
 };
 export default SQL;

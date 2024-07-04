@@ -1,13 +1,13 @@
 
 import {LogLevelType, AppInterface, AppOptions} from "./types";
-import FastSqlite3Logger from "./datastore/FastSqlite3Logger";
+import Sqlite3Logger from "./datastore/Sqlite3Logger";
 
 function createApp(options: AppOptions): AppInterface {
   let label: string = options.defaultLabel || 'root';
   let logLevel: LogLevelType = options.defaultLogLevel || 'info';
   const labelStack = [] as string[];
   const {debug, warn, log, error} = console;
-  const db = new FastSqlite3Logger('logs.db', false);
+  const db = new Sqlite3Logger('logs.db', false);
 
   return {
     restoreLabel() {
