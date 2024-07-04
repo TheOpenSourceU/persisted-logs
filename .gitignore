@@ -2,3 +2,6 @@
 .idea
 dist
 *.sqlite
+
+*.db
+*.log
