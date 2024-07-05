@@ -1,7 +1,7 @@
 {
   "name": "persisted-logs",
-  "version": "1.0.3",
-  "description": "Concept is a logging library that is always persistent.",
+  "version": "1.0.4",
+  "description": "(BetterLogs) An always persisted logging library.",
   "main": "dist/app.js",
   "scripts": {
     "pretest": "npm run build",
