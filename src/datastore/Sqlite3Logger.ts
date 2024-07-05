@@ -86,7 +86,7 @@ export default class Sqlite3Logger {
         values ($level, $logTag, $logMessage, $logJson, current_timestamp, current_timestamp);
     `;
 
-    if(!this._database) this._database = await this._dbPromise;
+    if(!this._database) this._database = await this._dbPromise; //Rejecting or some shit.
 
     await new Promise<void>((resolve, reject) => {
       this._database!.run(sql, params, (err) => {
