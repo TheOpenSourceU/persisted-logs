@@ -11,8 +11,7 @@ export type BetterLog = {
 function getBetterLog() {
   const db = new Sqlite3Logger('log.db', false);
   void db.Debug('BetterLogs', 'Bootstrapped');
-
-  return {
+  const d: BetterLog = {
     async debug(tag:string, msg:string) {
       return db.Debug(tag, msg);
     },
@@ -26,6 +25,7 @@ function getBetterLog() {
       return db.Error(tag, msg);
     }
   };
+  return d;
 }
 
 const betterLog = getBetterLog();
