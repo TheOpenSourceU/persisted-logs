@@ -26,7 +26,9 @@ const logLevelData: SqlString = `
   INSERT INTO log_level (id, level) VALUES (4, 'Debug');
 `;
 
-const SQL ={
-  logTable, logLevelTable, logLevelData
+const SQL = {
+  logTable,
+  logLevelTable,
+  logLevelData,
 };
 export default SQL;

@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prettier": "prettier --write src/**/*.ts",
     "pretest": "npm run build",
     "test": "jest",
     "build": "tsup",
