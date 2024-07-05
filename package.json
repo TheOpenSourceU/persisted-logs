@@ -1,9 +1,10 @@
 {
   "name": "persisted-logs",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Concept is a logging library that is always persistent.",
-  "main": "src/app.ts",
+  "main": "dist/app.js",
   "scripts": {
+    "pretest": "npm run build",
     "test": "jest",
     "build": "tsup",
     "prelog": "npm run build",
@@ -19,7 +20,14 @@
     "networkless",
     "serverless"
   ],
-  "author": "Frank Villasenor <frank@theOpenSourceU.org>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheOpenSourceU/persisted-logs"
+  },
+  "author": {
+    "name": "Frank Villasenor <frank@theOpenSourceU.org>",
+    "url": "https://www.theOpenSourceU.org/"
+  },
   "license": "MIT",
   "dependencies": {
     "@swc/core": "^1.6.6",
