@@ -1,13 +1,18 @@
 import Sqlite3Logger from "./datastore/Sqlite3Logger";
 
-export type BetterLog = { debug(tag: string, msg: string): Promise<void>; info(tag: string, msg: string): Promise<void>; warn(tag: string, msg: string): Promise<void>; error(tag: string, msg: string): Promise<void>; }
+export type BetterLog = {
+  debug(tag: string, msg: string): Promise<void>;
+  info(tag: string, msg: string): Promise<void>;
+  warn(tag: string, msg: string): Promise<void>;
+  error(tag: string, msg: string): Promise<void>;
+};
 
-let obj: BetterLog;
-export default function () {
+
+function getBetterLog() {
   const db = new Sqlite3Logger('log.db', false);
   void db.Debug('BetterLogs', 'Bootstrapped');
-  if(obj) return obj;
-  return (obj = {
+
+  return {
     async debug(tag:string, msg:string) {
       return db.Debug(tag, msg);
     },
@@ -20,5 +25,8 @@ export default function () {
     async error(tag:string, msg:string) {
       return db.Error(tag, msg);
     }
-  });
+  };
 }
+
+const betterLog = getBetterLog();
+export default betterLog;

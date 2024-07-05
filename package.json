@@ -1,6 +1,6 @@
 {
   "name": "persisted-logs",
-  "version": "1.0.6",
+  "version": "1.0.10",
   "description": "(BetterLogs) An always persisted logging library.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
     "test": "jest",
     "build": "tsup",
     "prelog": "npm run build",
-    "prepack": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "log",
@@ -24,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheOpenSourceU/persisted-logs"
+    "url": "git+https://github.com/TheOpenSourceU/persisted-logs.git"
   },
   "author": {
     "name": "Frank Villasenor <frank@theOpenSourceU.org>",
