@@ -1,14 +1,16 @@
 {
   "name": "persisted-logs",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "(BetterLogs) An always persisted logging library.",
-  "main": "dist/app.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "pretest": "npm run build",
     "test": "jest",
     "build": "tsup",
     "prelog": "npm run build",
-    "log": "node dist/test.js"
+    "log": "node dist/test.js",
+    "prepack": "npm run build"
   },
   "keywords": [
     "log",
