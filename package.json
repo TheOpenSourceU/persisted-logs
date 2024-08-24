@@ -1,6 +1,6 @@
 {
   "name": "persisted-logs",
-  "version": "1.0.15-alpha",
+  "version": "1.0.15-alpha-1",
   "description": "(BetterLogs) An always persisted logging library.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
