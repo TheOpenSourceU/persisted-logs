@@ -18,3 +18,9 @@ export type LogMessageType = {
   msg: string,
   level: string
 };
+export type BetterLogInstance = {
+  debug: (tags: LogMessageTagType, msg: string) => void;
+  error: (tags: LogMessageTagType, msg: string) => void;
+  info: (tags: LogMessageTagType, msg: string) => void;
+  warn: (tags: LogMessageTagType, msg: string) => void;
+}

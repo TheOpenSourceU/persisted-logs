@@ -6,9 +6,9 @@
 
 import Sqlite3Logger from "./datastore/Sqlite3Logger";
 import EventEmitter from "node:events";
-import { AppOptions, LogMessageTagType, LogMessageType } from "./types";
+import { AppOptions, BetterLogInstance, LogMessageTagType, LogMessageType } from "./types";
 
-function getBetterLog(options?: AppOptions) {
+function getBetterLog(options?: AppOptions): BetterLogInstance {
   const db = new Sqlite3Logger(options?.dbName || "better-logs.db", false);
   const pendingLogMessages: LogMessageType[] = [];
   const ee = new EventEmitter<any>();
