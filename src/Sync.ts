@@ -6,15 +6,10 @@
 
 import Sqlite3Logger from "./datastore/Sqlite3Logger";
 import EventEmitter from "node:events";
+import { AppOptions, LogMessageTagType, LogMessageType } from "./types";
 
-type LogMessageType = {
-  tag: string,
-  msg: string,
-  level: string
-};
-
-function getBetterLog() {
-  const db = new Sqlite3Logger('log.db', false);
+function getBetterLog(options?: AppOptions) {
+  const db = new Sqlite3Logger(options?.dbName || "better-logs.db", false);
   const pendingLogMessages: LogMessageType[] = [];
   const ee = new EventEmitter<any>();
   let locked = false;
@@ -29,24 +24,25 @@ function getBetterLog() {
           //pendingLogMessages.unshift(msg);
           ee.emit('save_failed', msg, err);
         };
+        msg.tags = Array.isArray(msg.tags) ? msg.tags : [msg.tags];
         switch (msg.level) {
           case 'debug':
-            db.Debug(msg.tag, msg.msg).then(() => {
+            db.Debug(msg.tags.join(","), msg.msg).then(() => {
               ee.emit('process_queue');
             }).catch(reportFailureToAlternate);
             break;
           case 'info':
-            db.Info(msg.tag, msg.msg).then(() => {
+            db.Info(msg.tags.join(","), msg.msg).then(() => {
               ee.emit('process_queue');
             }).catch(reportFailureToAlternate);
             break;
           case 'warn':
-            db.Warn(msg.tag, msg.msg).then(() => {
+            db.Warn(msg.tags.join(","), msg.msg).then(() => {
               ee.emit('process_queue');
             }).catch(reportFailureToAlternate);
             break;
           default:
-            db.Log('info', msg.tag, msg.msg)
+            db.Log('info', msg.tags.join(","), msg.msg)
               .catch(reportFailureToAlternate);
             break;
         }
@@ -57,30 +53,30 @@ function getBetterLog() {
   });
 
   let counterForInfo = 1;
-  function theBehaviorIsAlwaysTheSame(message:LogMessageType) {
-    const {tag, msg,level } = message;
-    pendingLogMessages.push({tag, msg, level: level || 'info'});
+  function processLog(message:LogMessageType) {
+    const {tags, msg,level } = message;
+    pendingLogMessages.push({tags, msg, level: level || 'info'});
     ee.emit('process_queue', counterForInfo++);
   }
-  // ee.on('save_failed', (msg: LogMessageType, err: unknown | Error | Object) => {
-  //   console.log('Error saving log message', msg, err);
-  //   pendingLogMessages.unshift(msg);
-  // });
+  ee.on('save_failed', (msg: LogMessageType, err: unknown | Error | Object) => {
+    console.error('Error saving log message', msg, err);
+    pendingLogMessages.unshift(msg);
+  });
 
   const d = {
-    debug: function(tag:string, msg:string): void {
-      theBehaviorIsAlwaysTheSame({tag, msg, level: 'debug'});
+    debug: function(tags:LogMessageTagType, msg:string): void {
+      processLog({tags, msg, level: 'debug'});
       // pendingLogMessages.push({tag, msg, level: 'debug'});
       // ee.emit('process_queue');
     },
-    info: function(tag:string, msg:string) {
-      theBehaviorIsAlwaysTheSame({tag, msg, level: 'info'});
+    info: function(tags:LogMessageTagType, msg:string) {
+      processLog({tags, msg, level: 'info'});
     },
-    warn: function(tag:string, msg:string) {
-      theBehaviorIsAlwaysTheSame({tag, msg, level: 'warn'});
+    warn: function(tags:LogMessageTagType, msg:string) {
+      processLog({tags, msg, level: 'warn'});
     },
-    error: function(tag:string, msg:string) {
-      theBehaviorIsAlwaysTheSame({tag, msg, level: 'error'});
+    error: function(tags:LogMessageTagType, msg:string) {
+      processLog({tags, msg, level: 'error'});
     }
   };
   return d;

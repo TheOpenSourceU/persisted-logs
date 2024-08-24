@@ -2,6 +2,8 @@ import * as sqlite3 from "sqlite3";
 import { LogLevelType } from "../types";
 import SQL from "./SQL";
 import EventEmitter from "node:events";
+import colors from "colors";
+colors.enable();
 
 //Should the etnire thing be static for easyn ess??
 /**
@@ -55,16 +57,16 @@ export default class Sqlite3Logger {
     if (Sqlite3Logger.errorLogMap[level] <= this.currentLogLevelNumeric) {
       switch (level) {
         case "error":
-          console.error(`${level} [${tag}]: ${message}`);
+          console.error(`${level} [${tag}]: ${message}`.red);
           break;
         case "warn":
-          console.warn(`${level} [${tag}]: ${message}`);
+          console.warn(`${level} [${tag}]: ${message}`.yellow.bold);
           break;
         case "debug":
-          console.debug(`${level} [${tag}]: ${message}`);
+          console.debug(`${level} [${tag}]: ${message}`.dim);
           break;
         default:
-          console.log(`${level} [${tag}]: ${message}`);
+          console.log(`${level} [${tag}]: ${message}`.black);
       }
     }
   }

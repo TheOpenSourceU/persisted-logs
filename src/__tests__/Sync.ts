@@ -36,7 +36,7 @@ describe('Sync', () => {
     expect(spyWarn).not.toHaveBeenCalled();
     expect(spyError).not.toHaveBeenCalled();
     return Promise.resolve();
-  })
+  });
 
   it('basic', (done) => {
     //Intention is a sync test.
@@ -60,10 +60,6 @@ describe('Sync', () => {
   for(let i = 0; i < 99999; i++) {
     const exampleData = Date.now().toString(32);
     d.push(exampleData);
-    // d.push(new Buffer(0).fill(currentLetterCode++));
-    // if (currentLetterCode >= letterLittleZCodeInUtf8) {
-    //   currentLetterCode = letterACodeInUtf8;
-    // }
   }
 
   let rotate = 0;

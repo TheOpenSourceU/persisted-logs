@@ -33,6 +33,7 @@
   "license": "MIT",
   "dependencies": {
     "@swc/core": "^1.6.6",
+    "colors": "^1.4.0",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
