@@ -42,7 +42,7 @@ export default class Sqlite3Logger {
             console.log("log table created");
           });
           db.exec(SQL.logLevelTable, () => {
-            console.log("log leve ltable created");
+            console.log("log level table created");
           });
           db.exec(SQL.logLevelData, () => {
             console.log("log level created");
@@ -71,6 +71,17 @@ export default class Sqlite3Logger {
     }
   }
 
+  protected async isReady(): Promise<boolean> {
+    try {
+      if (!this._database) this._database = await this._dbPromise;
+      return !!this._database;
+    } catch(er) {
+      Sqlite3Logger.ee.emit("error", er);
+      console.error('Could not bootstrap the database, it seems')
+      throw er; // At this point, we can never return true.
+    }
+  }
+
   public async Log(
     level: LogLevelType,
     tag: string,
@@ -78,6 +89,8 @@ export default class Sqlite3Logger {
   ): Promise<void> {
     if (!message?.trim()) return;
     if (Sqlite3Logger.errorLogMap[level] > this.currentLogLevelNumeric) return;
+
+    await this.isReady();
 
     tag = tag || "";
     this._log(level, tag, message);
@@ -92,8 +105,6 @@ export default class Sqlite3Logger {
         insert into app_log (level_id, log_tag, log_message, json_obj, created_on, s_created_on)
         values ($level, $logTag, $logMessage, $logJson, current_timestamp, current_timestamp);
     `;
-
-    if (!this._database) this._database = await this._dbPromise; //Rejecting or some shit.
 
     await new Promise<void>((resolve, reject) => {
       this._database!.run(sql, params, (err) => {
