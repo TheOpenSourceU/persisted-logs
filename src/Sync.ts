@@ -21,7 +21,6 @@ function getBetterLog(options?: AppOptions): BetterLogInstance {
       const msg = pendingLogMessages.shift();
       if (msg) {
         const reportFailureToAlternate = (err: unknown | Error | Object) => {
-          //pendingLogMessages.unshift(msg);
           ee.emit('save_failed', msg, err);
         };
         msg.tags = Array.isArray(msg.tags) ? msg.tags : [msg.tags];
@@ -47,6 +46,12 @@ function getBetterLog(options?: AppOptions): BetterLogInstance {
             break;
         }
       }
+
+      // should this be wrapped in a setImmediate?
+      if(pendingLogMessages.length > 0) {
+        setImmediate(() => ee.emit('process_queue'));
+      }
+
     } finally {
       locked = false;
     }
