@@ -53,23 +53,7 @@ export default class Sqlite3Logger {
     });
   }
 
-  private _log(level: LogLevelType, tag: string, message: string): void {
-    if (Sqlite3Logger.errorLogMap[level] <= this.currentLogLevelNumeric) {
-      switch (level) {
-        case "error":
-          console.error(`${level} [${tag}]: ${message}`.red);
-          break;
-        case "warn":
-          console.warn(`${level} [${tag}]: ${message}`.yellow.bold);
-          break;
-        case "debug":
-          console.debug(`${level} [${tag}]: ${message}`.dim);
-          break;
-        default:
-          console.log(`${level} [${tag}]: ${message}`.black);
-      }
-    }
-  }
+
 
   protected async isReady(): Promise<boolean> {
     try {
@@ -93,12 +77,11 @@ export default class Sqlite3Logger {
     await this.isReady();
 
     tag = tag || "";
-    this._log(level, tag, message);
     const params = {
       $level: Sqlite3Logger.errorLogMap[level],
-      $logTag: tag,
-      $logMessage: message,
-      $logJson: JSON.stringify({ tag, message }),
+      $logTag: tag.stripColors,
+      $logMessage: message.stripColors,
+      $logJson: JSON.stringify({ tag, message: message }),
     };
 
     const sql: string = `
