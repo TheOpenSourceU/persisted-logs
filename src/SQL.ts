@@ -6,6 +6,14 @@ const logLevelTable: SqlString = `create table log_level
   level text not null
 );`;
 
+const stmtLogTableExists: SqlString = `
+    SELECT name 
+    FROM sqlite_master 
+    WHERE 
+        type='table' 
+        AND name='app_log';
+`;
+
 const logTable: SqlString = `create table app_log
 (
     id           integer not null
@@ -15,6 +23,25 @@ const logTable: SqlString = `create table app_log
     log_tag      text    null,
     log_message  text    not null,
     json_obj     text    null,
+    created_on   integer default CURRENT_TIMESTAMP,
+    s_created_on text    default CURRENT_TIMESTAMP
+);`;
+
+const logTagsTable: SqlString = `create table LogTags
+    (
+        id           integer not null
+            constraint app_log_pk
+                primary key autoincrement,
+        log_id      integer not null,
+        tag_id      integer not null
+   );`;
+
+const logTags: SqlString = `create table tags
+(
+    id           integer not null
+        constraint tags_pk
+            primary key autoincrement,
+    tag      text    null,
     created_on   integer default CURRENT_TIMESTAMP,
     s_created_on text    default CURRENT_TIMESTAMP
 );`;
@@ -30,5 +57,8 @@ const SQL = {
   logTable,
   logLevelTable,
   logLevelData,
+  logTags,
+  stmtLogTableExists,
+  logTagsTable
 };
 export default SQL;

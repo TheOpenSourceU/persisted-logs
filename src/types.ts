@@ -1,6 +1,6 @@
 
 export type LogLevelType = "warn" | 'info' | 'error' | 'debug';
-export type DataStoreType = ":memory:" | "app-log.db" | string;
+export type DataStoreType = ":memory:" | string;
 
 export type AppOptions = {
   dbName: string;
@@ -23,4 +23,9 @@ export type BetterLogInstance = {
   error: (tags: LogMessageTagType, msg: string) => void;
   info: (tags: LogMessageTagType, msg: string) => void;
   warn: (tags: LogMessageTagType, msg: string) => void;
+}
+export type LogRecordType = {
+  level: LogLevelType;
+  tags: LogMessageTagType;
+  message: string;
 }
