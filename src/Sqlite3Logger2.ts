@@ -1,18 +1,26 @@
-import * as sqlite3 from "sqlite3";
 import { DataStoreType, LogLevelType, LogRecordType } from "./types";
 import SQL from "./SQL";
+import { AsyncDatabase } from "promised-sqlite3";
 
 // Under_Dev:
 //  this isn't quite working yet. The observed problem is that there
 //  is only one message that shows up. everything else seems lost.
 //  I'm thinking the problem is my usage of the sqlite3 lib. I'm doing
 //  something wrong or it's not working as I expect.
+//  -
+//  Tried an Async version and, still the same issue... No.
+// The problem is mixing of promises and non promises.
+//  That just doesn't work as I need. So, lets flip over to a full
+// async interface.
 
 /**
  * Logger that logs to a sqlite3 database.
  */
 export default class Sqlite3Logger2 {
   private readonly _dbPath: DataStoreType;
+  private _db: AsyncDatabase | undefined;
+
+
   public constructor(path:DataStoreType = ":memory:") {
     this._dbPath = path;
   }
@@ -25,6 +33,7 @@ export default class Sqlite3Logger2 {
   };
 
   public async RecordLog({level, tags, message}: LogRecordType): Promise<void> {
+    console.log('start RecordLog');
     const _tagsForNow = Array.isArray(tags) ? tags.map(i => i.stripColors.trim()).join(",") : tags.stripColors.trim();
 
     const params = {
@@ -39,62 +48,30 @@ export default class Sqlite3Logger2 {
         values ($level, $logTag, $logMessage, $logJson, current_timestamp, current_timestamp);
     `;
 
+    console.log('opening db...');
+    const db = this._db ? this._db : (this._db = await AsyncDatabase.open(this._dbPath));
+    //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
 
-    const db = new sqlite3.Database(this._dbPath);
-    const reportError = (er: Error | null) => {
-      if(!er) return;
-      console.error("Error inserting log message");
-      console.error(er);
-    }
+    console.log('checking db...');
     try {
-      db.serialize(() => {
-        console.log('Sqlite3Logger2.RecordLog: db.serialize db.serialize callback');
-
-        // Database has tables? If not, create them.
-        db.run(SQL.stmtLogTableExists, (err, row) => {
-          reportError(err);
-          if (!row) {
-            db.serialize(() => {
-              console.log('Sqlite3Logger2.RecordLog: db.serialize db.serialize callback');
-              db.run(SQL.logTable, () => {
-                console.debug("log table created");
-              });
-              db.run(SQL.logLevelTable, () => {
-                console.debug("log level table created");
-              });
-              db.run(SQL.logTags, () => {
-                console.debug("log tags created");
-              });
-              db.run(SQL.logTagsTable, () => {
-                console.debug("log tags table created");
-              });
-
-              db.run(SQL.logLevelData, () => {
-                console.debug("log level created");
-              });
-            });
-          }
-        });
-
-        // TODO: The SQL To break down and insert the tags into the tags table
-        //  as well as the log_tags table.
-        db.run(sql, params, (er) => {
-          console.log('Sqlite3Logger2.RecordLog: db.run callback');
-          reportError(er);
-
-          // This is the last step so we can close here.
-          db.close((er) => {
-            reportError(er);
-            console.log("db closed");
-          });
-        });
-      });
+      const tableExists = await db.run(SQL.stmtLogTableExists);
+      if (!tableExists) {
+        console.log('need to create the db');
+        await db.run(SQL.logTable);
+        await db.run(SQL.logLevelTable);
+        await db.run(SQL.logTags);
+        await db.run(SQL.logTagsTable);
+        await db.run(SQL.logLevelData);
+        console.log('created...');
+      }
+      console.log('running main sql...');
+      await db.run(sql, params);
     } catch(er) {
       console.error("Error processing db statements");
       console.error(er);
     } finally {
-      //db.close();
+      // console.log('closing db...');
+      // await db.close();
     }
   }
-
 }

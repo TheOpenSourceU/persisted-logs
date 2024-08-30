@@ -31,18 +31,20 @@ export default class QueueBuffer {
 
   public addLogRecord(logRecord: LogRecordType): void {
     this.buffer.push(logRecord);
-    this.promiseBuffer.push(this.process());
+    void this.process();
   }
 
-  private async process(): Promise<void> {
+  public async process() {
     if(this.isProcessing) return;
     this.isProcessing = true;
     while (this.buffer.length > 0) {
       const item = this.buffer.shift();
       if(item) {
-        console.log(`Processing: ${item}`);
-        return await this.dbLogger.RecordLog(item);
+        this.promiseBuffer.push(this.dbLogger.RecordLog(item));
       }
     }
+    this.isProcessing = false;
+    await Promise.all(this.promiseBuffer);
+    this.promiseBuffer = [];
   }
 }

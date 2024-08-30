@@ -35,9 +35,7 @@ class BetterLog implements IPersistedLog {
   }
 
   protected persistLog( level: LogLevelType, tags: string[], msg: string): void {
-    setImmediate(() => {
-      this._dbLogger.addLogRecord({level, tags, message: msg});
-    });
+    this._dbLogger.addLogRecord({level, tags, message: msg});
   }
 
   public async dispose(reset:boolean = true): Promise<void[]> {
