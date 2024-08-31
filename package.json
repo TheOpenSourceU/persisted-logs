@@ -1,6 +1,6 @@
 {
   "name": "persisted-logs",
-  "version": "1.0.18",
+  "version": "2.0.20240831",
   "description": "(BetterLogs) An always persisted logging library.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,9 @@
     "test": "jest",
     "build": "tsup",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish"
+    "publish": "npm publish",
+
+    "start": "ts-node test.ts"
   },
   "keywords": [
     "log",
@@ -34,6 +36,7 @@
   "dependencies": {
     "@swc/core": "^1.6.6",
     "colors": "^1.4.0",
+    "promised-sqlite3": "^2.1.0",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
