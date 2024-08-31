@@ -20,32 +20,46 @@ A lightweight, efficient logging system designed for both server environments an
 Install Persistent Logger via npm:
 
 ```bash
-npm install persistent-logger
+npm install persisted-logs
 ```
 
 Usage
 Server Applications
 
 ```javascript
+import BetterLog from "persisted-logs";
 
-const logger = require('persistent-logger');
+(async function() {
+  const bl = new BetterLog({ dbName:"unit-test-2.db",silent: false });
+  try {
+    await bl.info(['test', 'alina'], `This is an info message. ${Date.now()}`);
+
+    await bl.debug(['debug','test', 'Alina'], 'This is a debug message');
+    await bl.error(['test', 'error', ' spaces-And-caps-SHOULD-be-lower-case'], `This is an error message. it gets ${Date.now()}` +
+      ' highlighted as an' +
+      ' error');
+
+    await bl.warn(['test', 'warn', 'spaces are ok'], `This is a warning message. it gets highlighted as a warning ${Date.now()}`);
+  } catch (er) {
+    const _null = "[null]";
+    console.error(er?.toString() || _null);
+    await bl.error([], er?.toString() || _null);
+  }
+})();
 ```
 
-```
-logger.log('Your log message here');
-```
+## Please see the wiki for more information on how to use this package.
 
-## Configuration
-Details on how to configure the logger, including setting up the SQLite database and customizing data retention policies.  
+[persisted-logs/wiki](https://github.com/TheOpenSourceU/persisted-logs/wiki)
 
-## Contributing
-We welcome contributions! Please read our CONTRIBUTING.md for details on how to submit pull requests, and the process for submitting pull requests to us.  
+[https://github.com/TheOpenSourceU/persisted-logs/wiki](https://github.com/TheOpenSourceU/persisted-logs/wiki)
 
 ## License
 This project is open source and available under the MIT License.  
 
 ## Acknowledgments
-Made with ❤️ by Frank Villasenor (https://www.theOpenSourceU.org). Check out our other projects, like AI Poems at https://poems.theOpenSourceU.org/.  
+Made with ❤️ by Frank Villasenor (https://www.theOpenSourceU.org) for the heck of it. Check out our other projects, 
+like [AI Poems](https://poems.theOpenSourceU.org/) at https://poems.theOpenSourceU.org/.  
 Support
 
 For support, please open an issue in the GitHub repository or contact the maintainers directly through https://www.theOpenSourceU.org.
