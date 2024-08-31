@@ -33,9 +33,6 @@ class BetterLog implements IPersistedLog {
     this._options = {...this._defaultOptions, ...options };
     this._dbLogger = new Sqlite3Logger2(this._options.dbName);
     this._prune = true;
-    setInterval(async () => {
-      this._prune = true;
-    }, 10000);
   }
 
   protected async persistLog( level: LogLevelType, tags: string[], msg: string): Promise<void> {
@@ -76,7 +73,7 @@ class BetterLog implements IPersistedLog {
     if(!this._options.silent) {
       console.warn(`WARN: ${tags.join(", ")}: ${msg}`.yellow);
     }
-    await this.persistLog("info", tags, msg);
+    await this.persistLog("warn", tags, msg);
   }
 }
 

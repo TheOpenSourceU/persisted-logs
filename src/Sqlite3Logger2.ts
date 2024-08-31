@@ -34,58 +34,80 @@ export default class Sqlite3Logger2 {
   };
 
   public async RecordLog({level, tags, message}: LogRecordType): Promise<void> {
-    console.log('start RecordLog');
-    const _tagsForNow = Array.isArray(tags) ? tags.map(i => i.stripColors.trim()).join(",") : tags.stripColors.trim();
-
-    const params = {
-      $level: Sqlite3Logger2.errorLogMap[level],
-      $logTag: _tagsForNow,
-      $logMessage: message.stripColors,
-      $logJson: JSON.stringify({ tag:_tagsForNow, message: message }),
-    };
-
-    const sql: string = `
-        insert into app_log (level_id, log_tag, log_message, json_obj, created_on, s_created_on)
-        values ($level, $logTag, $logMessage, $logJson, current_timestamp, current_timestamp);
-    `;
-
     try {
+      const tableExists= await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
+      if (!tableExists?.length) {
+        const dbCreationResults: (RunResult | false | unknown[])[] = [];
 
-      const tableExists = await this.executeSql(SQL.stmtLogTableExists);
-      if (!tableExists) {
-        await this.executeSql(SQL.logTable);
-        await this.executeSql(SQL.logLevelTable);
-        await this.executeSql(SQL.logTags);
-        await this.executeSql(SQL.logTagsTable);
-        await this.executeSql(SQL.logLevelData);
+        dbCreationResults.push(await this.executeSql(SQL.logTable));
+        dbCreationResults.push(await this.executeSql(SQL.logLevelTable));
+        dbCreationResults.push(await this.executeSql(SQL.logTags));
+        dbCreationResults.push(await this.executeSql(SQL.logTagsTable));
+        for(const levelSql of SQL.logLevelData) {
+          if(!levelSql) continue;
+          dbCreationResults.push(await this.executeSql(levelSql));
+        }
+
+        console.log('dbCreationResults:', dbCreationResults);
+
+        // Expect this to be true now.
+        const nowShouldExist = await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
+        console.log('nowShouldExist:', nowShouldExist);
       }
-      await this.executeSql(sql, params);
+
+      if(!message?.trim()) return;
+      const _tagsForNow = Array.isArray(tags) ? tags.map(i => i.stripColors.trim()).join(",") : tags.stripColors.trim();
+
+      const params = {
+        $level: Sqlite3Logger2.errorLogMap[level],
+        $logTag: _tagsForNow,
+        $logMessage: message.stripColors,
+        $logJson: JSON.stringify({ tag:_tagsForNow, message: message.replace(`"`, "'") }),
+      };
+      //Under_Dev: I think something here isn't working right. strftime('%s', 'now')
+      const sql: string = `
+        insert into app_log (level_id, log_tag, log_message, json_obj)
+        values ($level, $logTag, $logMessage, $logJson);
+    `;
+      console.log('RecordLog sql:', sql, params);
+      await this.executeSql(sql, params, false);
     } catch(er) {
-      console.error("Error processing db statements");
       console.error(er);
     }
   }
 
-  private async executeSql(sql:string, params?: Record<string, CommonType>): Promise<RunResult | false> {
+  private async executeSql<T>(sql:string, params?: Record<string, CommonType>, incResults:boolean = false): Promise<RunResult | T[] | false> {
 
     if(!sql) {
       return Promise.resolve(false);
     }
 
-      const db = this._db ? this._db : (this._db = await AsyncDatabase.open(this._dbPath));
-      //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
+    const db = this._db ? this._db : (this._db = await AsyncDatabase.open(this._dbPath));
+    //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
 
     try {
-      return await db.run(SQL.stmtLogTableExists, params);
+      if(incResults) {
+        const d = await db.all<T>(sql, params);
+        return d;
+      } else {
+        const runResult = await db.run(sql, params);
+        console.log('runResult', runResult);
+        return runResult;
+      }
     } catch(er) {
+      console.error(`Error processing db statements \n${sql}\n\n`);
       throw new WrappedError(er as Error, "Error processing db statements");
+    } finally {
+      this._db = undefined;
+      await db.close();
     }
   }
 
   public async PruneLogs(prune: number) {
-    const sql: string = `
-        delete from main.app_log where created_on < datetime('now', $prune);
-    `;
-    return await this.executeSql(sql, { $prune: `-${prune} days` });
+    // const sql: string = `
+    //     delete from main.app_log where created_on < datetime('now', '-100 days');
+    // `;
+    // return await this.executeSql(sql, { $prune: `-${prune} days` });
+    return Promise.resolve(); // Address later.
   }
 }

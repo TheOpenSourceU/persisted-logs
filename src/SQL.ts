@@ -27,7 +27,7 @@ const logTable: SqlString = `create table app_log
     s_created_on text    default CURRENT_TIMESTAMP
 );`;
 
-const logTagsTable: SqlString = `create table LogTags
+const logTagsTable: SqlString = `create table log_tags
     (
         id           integer not null
             constraint app_log_pk
@@ -46,12 +46,12 @@ const logTags: SqlString = `create table tags
     s_created_on text    default CURRENT_TIMESTAMP
 );`;
 
-const logLevelData: SqlString = `
+const logLevelData: SqlString[] = `
   INSERT INTO log_level (id, level) VALUES (1, 'Error');
   INSERT INTO log_level (id, level) VALUES (2, 'Warn');
   INSERT INTO log_level (id, level) VALUES (3, 'Info');
   INSERT INTO log_level (id, level) VALUES (4, 'Debug');
-`;
+`.split("\n").filter(i => i.trim());
 
 const SQL = {
   logTable,
