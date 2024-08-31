@@ -5,12 +5,18 @@ const bl = new BetterLog({ dbName:"unit-test-2.db",silent: false });
 
 (async function() {
 
-  bl.info(['test'], 'This is an info message.');
+  try {
+    await bl.info(['test'], 'This is an info message.');
 
-  bl.debug(['test'], 'This is a debug message');
-  bl.error(['test'], 'This is an error message. it gets highlighted as an error');
+    await bl.debug(['test'], 'This is a debug message');
+    await bl.error(['test'], 'This is an error message. it gets highlighted as an error');
 
-  bl.warn(['test'], 'This is a warning message. it gets highlighted as a warning');
+    await bl.warn(['test'], 'This is a warning message. it gets highlighted as a warning');
+  } catch (er) {
+    const _null = "[null]";
+    console.error(er?.toString() || _null);
+    await bl.error([], er?.toString() || _null);
+  }
 
-  await bl.dispose(true);
+
 })();

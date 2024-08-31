@@ -1,4 +1,7 @@
 
+export type CommonType = string | number | boolean | undefined;
+//export type CommonTypes = Record<string, CommonType> | CommonType[];
+
 export type LogLevelType = "warn" | 'info' | 'error' | 'debug';
 export type DataStoreType = ":memory:" | string;
 
@@ -13,17 +16,6 @@ export type AppOptions = {
 
 export type LogMessageTagType = string[] | string;
 
-export type LogMessageType = {
-  tags: LogMessageTagType,
-  msg: string,
-  level: string
-};
-export type BetterLogInstance = {
-  debug: (tags: LogMessageTagType, msg: string) => void;
-  error: (tags: LogMessageTagType, msg: string) => void;
-  info: (tags: LogMessageTagType, msg: string) => void;
-  warn: (tags: LogMessageTagType, msg: string) => void;
-}
 export type LogRecordType = {
   level: LogLevelType;
   tags: LogMessageTagType;

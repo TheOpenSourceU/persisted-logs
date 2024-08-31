@@ -12,7 +12,6 @@
     "prepublishOnly": "npm run build",
     "publish": "npm publish",
 
-    "prestart": "npm run build",
     "start": "ts-node test.ts"
   },
   "keywords": [

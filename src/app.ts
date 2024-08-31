@@ -5,17 +5,17 @@
 
 import { AppOptions, LogLevelType } from "./types";
 import colors from "colors";
-import QueueBuffer from "./QueueBuffer";
+import Sqlite3Logger2 from "./Sqlite3Logger2";
 colors.enable();
 
 interface IPersistedLog {
-  debug(tags: string[], msg: string): void;
-  error(tags: string[], msg: string): void;
-  info(tags: string[], msg: string): void;
-  warn(tags: string[], msg: string): void;
+  debug(tags: string[], msg: string): Promise<void>;
+  error(tags: string[], msg: string): Promise<void>;
+  info(tags: string[], msg: string): Promise<void>;
+  log(tags: string[], msg: string): Promise<void>;
+  warn(tags: string[], msg: string): Promise<void>;
 }
 
-// No async in here. I want this to act as Sync.
 class BetterLog implements IPersistedLog {
   private readonly _options: AppOptions;
   private readonly _defaultOptions: AppOptions = {
@@ -26,51 +26,57 @@ class BetterLog implements IPersistedLog {
     prune: 10,
     useColor: true
   };
-  private readonly _dbLogger: QueueBuffer;
-  //private readonly _pendingPromises: Promise<void>[] = [];
+  private readonly _dbLogger: Sqlite3Logger2;
+  private _prune: boolean;
 
   public constructor(options: Partial<AppOptions>) {
     this._options = {...this._defaultOptions, ...options };
-    this._dbLogger = new QueueBuffer(this._options.dbName);
+    this._dbLogger = new Sqlite3Logger2(this._options.dbName);
+    this._prune = true;
+    setInterval(async () => {
+      this._prune = true;
+    }, 10000);
   }
 
-  protected persistLog( level: LogLevelType, tags: string[], msg: string): void {
-    this._dbLogger.addLogRecord({level, tags, message: msg});
+  protected async persistLog( level: LogLevelType, tags: string[], msg: string): Promise<void> {
+    await this._dbLogger.RecordLog({level, tags, message: msg});
+
+    if(this._prune) {
+      await this._dbLogger.PruneLogs(this._options.prune);
+      this._prune = false;
+    }
   }
 
-  public async dispose(reset:boolean = true): Promise<void[]> {
-    return await Promise.all(this._dbLogger.getPendingPromises(reset)); //TODO: Finish this.
-  }
-
-  public debug(tags: string[], msg: string): void {
+  public async debug(tags: string[], msg: string) {
     if(!this._options.silent) {
       console.log(`DEBUG: ${tags.join(", ")}: ${msg}`.gray);
     }
-    this.persistLog("debug", tags, msg);
+    await this.persistLog("debug", tags, msg);
   }
 
-  public error(tags: string[], msg: string): void {
+  public async error(tags: string[], msg: string) {
     if(!this._options.silent) {
       console.error(`ERROR: ${tags.join(", ")}: ${msg}`.red);
     }
-    this.persistLog("error", tags, msg);
+    await this.persistLog("error", tags, msg);
   }
 
-  public log(tags: string[], msg: string): void {
-    this.info(tags, msg);
+  public async log(tags: string[], msg: string) {
+    await this.info(tags, msg);
   }
-  public info(tags: string[], msg: string): void {
+
+  public async info(tags: string[], msg: string) {
     if(!this._options.silent) {
       console.log(`INFO: ${tags.join(", ")}: ${msg}`);
     }
-    this.persistLog("info", tags, msg);
+    await this.persistLog("info", tags, msg);
   }
 
-  public warn(tags: string[], msg: string): void {
+  public async warn(tags: string[], msg: string) {
     if(!this._options.silent) {
       console.warn(`WARN: ${tags.join(", ")}: ${msg}`.yellow);
     }
-    this.persistLog("info", tags, msg);
+    await this.persistLog("info", tags, msg);
   }
 }
 

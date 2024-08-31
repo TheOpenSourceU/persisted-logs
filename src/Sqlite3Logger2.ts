@@ -1,6 +1,8 @@
-import { DataStoreType, LogLevelType, LogRecordType } from "./types";
+import { CommonType, DataStoreType, LogLevelType, LogRecordType } from "./types";
 import SQL from "./SQL";
 import { AsyncDatabase } from "promised-sqlite3";
+import { RunResult } from "sqlite3";
+import WrappedError from "./WrappedError";
 
 // Under_Dev:
 //  this isn't quite working yet. The observed problem is that there
@@ -19,11 +21,10 @@ import { AsyncDatabase } from "promised-sqlite3";
 export default class Sqlite3Logger2 {
   private readonly _dbPath: DataStoreType;
   private _db: AsyncDatabase | undefined;
-
-
   public constructor(path:DataStoreType = ":memory:") {
     this._dbPath = path;
   }
+
 
   private static readonly errorLogMap: { [key in LogLevelType]: number } = {
     error: 1,
@@ -48,30 +49,43 @@ export default class Sqlite3Logger2 {
         values ($level, $logTag, $logMessage, $logJson, current_timestamp, current_timestamp);
     `;
 
-    console.log('opening db...');
-    const db = this._db ? this._db : (this._db = await AsyncDatabase.open(this._dbPath));
-    //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
-
-    console.log('checking db...');
     try {
-      const tableExists = await db.run(SQL.stmtLogTableExists);
+
+      const tableExists = await this.executeSql(SQL.stmtLogTableExists);
       if (!tableExists) {
-        console.log('need to create the db');
-        await db.run(SQL.logTable);
-        await db.run(SQL.logLevelTable);
-        await db.run(SQL.logTags);
-        await db.run(SQL.logTagsTable);
-        await db.run(SQL.logLevelData);
-        console.log('created...');
+        await this.executeSql(SQL.logTable);
+        await this.executeSql(SQL.logLevelTable);
+        await this.executeSql(SQL.logTags);
+        await this.executeSql(SQL.logTagsTable);
+        await this.executeSql(SQL.logLevelData);
       }
-      console.log('running main sql...');
-      await db.run(sql, params);
+      await this.executeSql(sql, params);
     } catch(er) {
       console.error("Error processing db statements");
       console.error(er);
-    } finally {
-      // console.log('closing db...');
-      // await db.close();
     }
+  }
+
+  private async executeSql(sql:string, params?: Record<string, CommonType>): Promise<RunResult | false> {
+
+    if(!sql) {
+      return Promise.resolve(false);
+    }
+
+      const db = this._db ? this._db : (this._db = await AsyncDatabase.open(this._dbPath));
+      //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
+
+    try {
+      return await db.run(SQL.stmtLogTableExists, params);
+    } catch(er) {
+      throw new WrappedError(er as Error, "Error processing db statements");
+    }
+  }
+
+  public async PruneLogs(prune: number) {
+    const sql: string = `
+        delete from main.app_log where created_on < datetime('now', $prune);
+    `;
+    return await this.executeSql(sql, { $prune: `-${prune} days` });
   }
 }
