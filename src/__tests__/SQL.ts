@@ -20,12 +20,10 @@ describe("SQL.ts Constants", () => {
   });
 
   it("logLevelData should contain SQL for inserting log levels", () => {
-    expect(SQL.logLevelData).toContain(
-      "INSERT INTO log_level (id, level) VALUES",
-    );
-    expect(SQL.logLevelData).toContain(`(1, 'Error')`);
-    expect(SQL.logLevelData).toContain(`(2, 'Warn')`);
-    expect(SQL.logLevelData).toContain(`(3, 'Info')`);
-    expect(SQL.logLevelData).toContain(`(4, 'Debug')`);
+    expect(SQL.logLevelData).toHaveLength(4);
+    expect(SQL.logLevelData[0]).toBe("INSERT INTO log_level (id, level) VALUES (1, 'Error');");
+    expect(SQL.logLevelData[1]).toBe("INSERT INTO log_level (id, level) VALUES (2, 'Warn');");
+    expect(SQL.logLevelData[2]).toBe("INSERT INTO log_level (id, level) VALUES (3, 'Info');");
+    expect(SQL.logLevelData[3]).toBe("INSERT INTO log_level (id, level) VALUES (4, 'Debug');");
   });
 });

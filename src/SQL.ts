@@ -50,7 +50,7 @@ const logLevelData: SqlString[] = `
   INSERT INTO log_level (id, level) VALUES (2, 'Warn');
   INSERT INTO log_level (id, level) VALUES (3, 'Info');
   INSERT INTO log_level (id, level) VALUES (4, 'Debug');
-`.split("\n").filter(i => i.trim());
+`.split("\n").filter(i => i.trim()).map(i => i.trim());
 
 const SQL = {
   logTable,
