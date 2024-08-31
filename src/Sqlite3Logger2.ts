@@ -47,12 +47,10 @@ export default class Sqlite3Logger2 {
           if(!levelSql) continue;
           dbCreationResults.push(await this.executeSql(levelSql));
         }
-
-        console.log('dbCreationResults:', dbCreationResults);
-
-        // Expect this to be true now.
         const nowShouldExist = await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
-        console.log('nowShouldExist:', nowShouldExist);
+        if(!nowShouldExist?.length) {
+          console.warn('Failed to create log tables.');
+        }
       }
 
       if(!message?.trim()) return;
@@ -64,7 +62,7 @@ export default class Sqlite3Logger2 {
         $logMessage: message.stripColors,
         $logJson: JSON.stringify({ tag:_tagsForNow, message: message.replace(`"`, "'") }),
       };
-      //Under_Dev: I think something here isn't working right. strftime('%s', 'now')
+
       const sql: string = `
         insert into app_log (level_id, log_tag, log_message, json_obj)
         values ($level, $logTag, $logMessage, $logJson);
