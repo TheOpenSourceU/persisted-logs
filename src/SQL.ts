@@ -20,7 +20,6 @@ const logTable: SqlString = `create table app_log
         constraint app_log_pk
             primary key autoincrement,
     level_id     INTEGER not null,
-    log_tag      text    null,
     log_message  text    not null,
     json_obj     text    null,
     created_on   integer default CURRENT_TIMESTAMP,

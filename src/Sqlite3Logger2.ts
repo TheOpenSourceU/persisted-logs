@@ -33,34 +33,38 @@ export default class Sqlite3Logger2 {
     debug: 4,
   };
 
+  private async createDatabase() {
+    const tableExists= await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
+    if (!tableExists?.length) {
+      const dbCreationResults: (RunResult | false | unknown[])[] = [];
+
+      dbCreationResults.push(await this.executeSql(SQL.logTable));
+      dbCreationResults.push(await this.executeSql(SQL.logLevelTable));
+      dbCreationResults.push(await this.executeSql(SQL.logTags));
+      dbCreationResults.push(await this.executeSql(SQL.logTagsTable));
+      for(const levelSql of SQL.logLevelData) {
+        if(!levelSql) continue;
+        dbCreationResults.push(await this.executeSql(levelSql));
+      }
+      const nowShouldExist = await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
+      if(!nowShouldExist?.length) {
+        console.warn('Failed to create log tables.');
+      }
+    }
+  }
+
   public async RecordLog({level, tags, message}: LogRecordType): Promise<void> {
     try {
-      const tableExists= await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
-      if (!tableExists?.length) {
-        const dbCreationResults: (RunResult | false | unknown[])[] = [];
-
-        dbCreationResults.push(await this.executeSql(SQL.logTable));
-        dbCreationResults.push(await this.executeSql(SQL.logLevelTable));
-        dbCreationResults.push(await this.executeSql(SQL.logTags));
-        dbCreationResults.push(await this.executeSql(SQL.logTagsTable));
-        for(const levelSql of SQL.logLevelData) {
-          if(!levelSql) continue;
-          dbCreationResults.push(await this.executeSql(levelSql));
-        }
-        const nowShouldExist = await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
-        if(!nowShouldExist?.length) {
-          console.warn('Failed to create log tables.');
-        }
-      }
+      await this.createDatabase();
 
       if(!message?.trim()) return;
-      const _tagsForNow = Array.isArray(tags) ? tags.map(i => i.stripColors.trim()).join(",") : tags.stripColors.trim();
+
+      const tagIds = await this.convertToTagList(tags);
 
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
-        $logTag: _tagsForNow,
         $logMessage: message.stripColors,
-        $logJson: JSON.stringify({ tag:_tagsForNow, message: message.replace(`"`, "'") }),
+        $logJson: JSON.stringify({ message: message.replace(`"`, "'") }),
       };
 
       const sql: string = `
@@ -68,7 +72,13 @@ export default class Sqlite3Logger2 {
         values ($level, $logTag, $logMessage, $logJson);
     `;
       console.log('RecordLog sql:', sql, params);
-      await this.executeSql(sql, params, false);
+      const logEntryResult = await this.executeSql(sql, params, false) as RunResult | false;
+
+      if(logEntryResult !== false) {
+        const lastId = logEntryResult?.lastID;
+        // Ok so we have our log Id. Do the insert.
+        await this.insertTags(lastId, tagIds);
+      }
     } catch(er) {
       console.error(er);
     }
@@ -89,13 +99,15 @@ export default class Sqlite3Logger2 {
         return d;
       } else {
         const runResult = await db.run(sql, params);
-        console.log('runResult', runResult);
+        //console.log('runResult', runResult);
         return runResult;
       }
     } catch(er) {
       console.error(`Error processing db statements \n${sql}\n\n`);
       throw new WrappedError(er as Error, "Error processing db statements");
     } finally {
+      // TODO: Determine if this is needed. I think it wasn't
+      //  writing to disk without it thought
       this._db = undefined;
       await db.close();
     }
@@ -107,5 +119,54 @@ export default class Sqlite3Logger2 {
     // `;
     // return await this.executeSql(sql, { $prune: `-${prune} days` });
     return Promise.resolve(); // Address later.
+  }
+
+  private async convertToTagList(tags: string[]) {
+    if(!tags || tags.length === 0) return [];
+    const tagIds: number[] = [];
+    for(const tag of tags) {
+      const tagId = await this.findTagIdOrCreate(tag);
+      if(tagId > -1) {
+        tagIds.push(tagId);
+      }
+    }
+    return tagIds;
+  }
+
+
+
+  private async findTagIdOrCreate(tag: string): Promise<number> {
+    if(!tag.trim()) return -1;
+    const sql: string = `
+      select id from tags where tag = $tag;
+    `;
+    const result = await this.executeSql<{id:number}>(sql, { $tag: tag }, true) as {id:number}[];
+    if(result?.length) {
+      return result[0].id;
+    }
+    return await this.createTag(tag);
+  }
+  private async createTag(tag: string): Promise<number> {
+    if(!tag.trim()) return -1;
+    const sql: string = `
+      insert into tags (tag) values ($tag);
+    `;
+    const queryResults = await this.executeSql(sql, { $tag: tag }, false) as RunResult | false;
+    if(queryResults !== false) {
+      return queryResults?.lastID;
+    }
+    return -1;
+  }
+
+
+  private async insertTags(lastId: number, tagIds: number[]) {
+    if(!tagIds || tagIds.length === 0) return;
+    if(!lastId) return;
+    const sql: string = `
+      insert into log_tags (log_id, tag_id) values ($logId, $tagId);
+    `;
+    for(const tagId of tagIds) {
+      await this.executeSql(sql, { $logId: lastId, $tagId: tagId }, false);
+    }
   }
 }

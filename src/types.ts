@@ -14,10 +14,8 @@ export type AppOptions = {
   prune: number; // Restricted to positive number
 }
 
-export type LogMessageTagType = string[] | string;
-
 export type LogRecordType = {
   level: LogLevelType;
-  tags: LogMessageTagType;
+  tags: string[];
   message: string;
 }
