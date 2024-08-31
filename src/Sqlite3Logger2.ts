@@ -68,15 +68,13 @@ export default class Sqlite3Logger2 {
       };
 
       const sql: string = `
-        insert into app_log (level_id, log_tag, log_message, json_obj)
-        values ($level, $logTag, $logMessage, $logJson);
+        insert into app_log (level_id, log_message, json_obj)
+        values ($level, $logMessage, $logJson);
     `;
-      console.log('RecordLog sql:', sql, params);
       const logEntryResult = await this.executeSql(sql, params, false) as RunResult | false;
 
       if(logEntryResult !== false) {
         const lastId = logEntryResult?.lastID;
-        // Ok so we have our log Id. Do the insert.
         await this.insertTags(lastId, tagIds);
       }
     } catch(er) {
@@ -99,7 +97,6 @@ export default class Sqlite3Logger2 {
         return d;
       } else {
         const runResult = await db.run(sql, params);
-        //console.log('runResult', runResult);
         return runResult;
       }
     } catch(er) {
@@ -137,6 +134,7 @@ export default class Sqlite3Logger2 {
 
   private async findTagIdOrCreate(tag: string): Promise<number> {
     if(!tag.trim()) return -1;
+    tag = tag.trim().toLowerCase();
     const sql: string = `
       select id from tags where tag = $tag;
     `;
