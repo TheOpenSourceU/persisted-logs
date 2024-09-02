@@ -1,30 +1,33 @@
-# Persistent Logger
+# persisted-logs - A Persistent Logger
 
-A lightweight, efficient logging system designed for both server environments and command-line interface (CLI) applications. Persistent Logger outputs logs to the console and stores them in a SQLite database for easy retrieval and management. Ideal for developers who value long-term data persistence and the flexibility of SQL for data manipulation.
+A lightweight, efficient logging system designed for both server 
+environments and command-line interface (CLI) applications. Persistent 
+Logger outputs logs to the console and stores them in a SQLite database for 
+easy retrieval and management. Ideal for developers who value long-term data 
+persistence and the flexibility of SQL for data manipulation.
 
 ## Features
 
 - **Console & SQLite Logging**: Seamlessly logs messages to both the console and a SQLite database.
 - **Searchable Logs**: Leverage SQL to easily search and filter log data.
 - **Data Persistence**: Designed for long-term data storage, making it easier to track historical log data.
-- **Configurable Data Retention**: Includes a mechanism to periodically clean up old data, with customizable settings to manage data retention according to your needs.
+- **Configurable Data Retention**: (Soon) Includes a mechanism to periodically clean up old data, 
+with customizable settings to manage data retention according to your needs.
 
 ## Getting Started
 
-### Prerequisites
+### Targets
+Generally intented for react-native or node.js applications. Not meant for use in the 
+browser since browsers are client side.
 
-- Node.js and npm installed on your system.
 
 ### Installation
 
-Install Persistent Logger via npm:
+Install persisted-logs via npm:
 
 ```bash
 npm install persisted-logs
 ```
-
-Usage
-Server Applications
 
 ```javascript
 import BetterLog from "persisted-logs";
