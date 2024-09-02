@@ -15,6 +15,7 @@ interface IPersistedLog {
   log(tags: string[], msg: string): Promise<void>;
   warn(tags: string[], msg: string): Promise<void>;
 
+
   /**
   * During run time, mute the output and just persist it.
   */
@@ -24,6 +25,12 @@ interface IPersistedLog {
   * During run time, unmute the output - log & persist it.
   */
   unhush(): void;
+
+  /**
+   * During run time, mute the output for the
+   * next message and just persist it.
+   */
+  hushNext(): void;
 }
 
 class BetterLog implements IPersistedLog {
@@ -38,11 +45,13 @@ class BetterLog implements IPersistedLog {
   };
   private readonly _dbLogger: Sqlite3Logger2;
   private _prune: boolean;
+  private _hushNext: boolean;
 
   public constructor(options: Partial<AppOptions>) {
     this._options = {...this._defaultOptions, ...options };
     this._dbLogger = new Sqlite3Logger2(this._options.dbName);
-    this._prune = true;
+    this._prune = false;
+    this._hushNext = false;
   }
 
   protected async persistLog( level: LogLevelType, tags: string[], msg: string): Promise<void> {
@@ -55,14 +64,14 @@ class BetterLog implements IPersistedLog {
   }
 
   public async debug(tags: string[], msg: string) {
-    if(!this._options.silent) {
+    if(this.isNotSilent()) {
       console.log(`DEBUG: ${tags.join(", ")}: ${msg}`.gray);
     }
     await this.persistLog("debug", tags, msg);
   }
 
   public async error(tags: string[], msg: string) {
-    if(!this._options.silent) {
+    if(this.isNotSilent()) {
       console.error(`ERROR: ${tags.join(", ")}: ${msg}`.red);
     }
     await this.persistLog("error", tags, msg);
@@ -73,14 +82,14 @@ class BetterLog implements IPersistedLog {
   }
 
   public async info(tags: string[], msg: string) {
-    if(!this._options.silent) {
+    if(this.isNotSilent()) {
       console.log(`INFO: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("info", tags, msg);
   }
 
   public async warn(tags: string[], msg: string) {
-    if(!this._options.silent) {
+    if(this.isNotSilent()) {
       console.warn(`WARN: ${tags.join(", ")}: ${msg}`.yellow);
     }
     await this.persistLog("warn", tags, msg);
@@ -98,6 +107,26 @@ class BetterLog implements IPersistedLog {
    */
   public unhush() {
     this._options.silent = false;
+  }
+
+  /**
+   * During run time, mute the output for the
+   * next message and just persist it.
+   */
+  public hushNext() {
+    this._hushNext = true;
+  }
+
+  private isNextHushed(): boolean {
+    if(this._hushNext) {
+      this._hushNext = false;
+      return true;
+    }
+    return false;
+  }
+
+  private isNotSilent(): boolean {
+    return !(this.isNextHushed() || this._options.silent)
   }
 }
 
