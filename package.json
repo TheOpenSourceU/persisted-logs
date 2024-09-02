@@ -10,7 +10,7 @@
     "test": "jest",
     "build": "tsup",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish",
+    "_publish": "npm publish",
 
     "start": "ts-node test.ts"
   },
