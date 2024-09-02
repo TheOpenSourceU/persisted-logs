@@ -4,9 +4,8 @@
 // at: https://github.com/TheOpenSourceU/persisted-logs/wiki
 
 import { AppOptions, LogLevelType } from "./types";
-import colors from "colors";
 import Sqlite3Logger2 from "./Sqlite3Logger2";
-colors.enable();
+
 
 interface IPersistedLog {
   debug(tags: string[], msg: string): Promise<void>;
@@ -65,14 +64,14 @@ class BetterLog implements IPersistedLog {
 
   public async debug(tags: string[], msg: string) {
     if(this.isNotSilent()) {
-      console.log(`DEBUG: ${tags.join(", ")}: ${msg}`.gray);
+      console.log(`DEBUG: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("debug", tags, msg);
   }
 
   public async error(tags: string[], msg: string) {
     if(this.isNotSilent()) {
-      console.error(`ERROR: ${tags.join(", ")}: ${msg}`.red);
+      console.error(`ERROR: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("error", tags, msg);
   }
@@ -90,7 +89,7 @@ class BetterLog implements IPersistedLog {
 
   public async warn(tags: string[], msg: string) {
     if(this.isNotSilent()) {
-      console.warn(`WARN: ${tags.join(", ")}: ${msg}`.yellow);
+      console.warn(`WARN: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("warn", tags, msg);
   }

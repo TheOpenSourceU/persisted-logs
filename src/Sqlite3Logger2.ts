@@ -63,7 +63,7 @@ export default class Sqlite3Logger2 {
 
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
-        $logMessage: message.stripColors,
+        $logMessage: message,
         $logJson: JSON.stringify({ message: message.replace(`"`, "'") }),
       };
 
