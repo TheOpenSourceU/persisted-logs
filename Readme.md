@@ -17,9 +17,8 @@ with customizable settings to manage data retention according to your needs.
 ## Getting Started
 
 ### Targets
-Generally intented for react-native or node.js applications. Not meant for use in the 
+Generally node.js applications. Not meant for use in the 
 browser since browsers are client side.
-
 
 ### Installation
 
