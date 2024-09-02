@@ -14,6 +14,16 @@ interface IPersistedLog {
   info(tags: string[], msg: string): Promise<void>;
   log(tags: string[], msg: string): Promise<void>;
   warn(tags: string[], msg: string): Promise<void>;
+
+  /**
+  * During run time, mute the output and just persist it.
+  */
+  hush(): void;
+
+  /**
+  * During run time, unmute the output - log & persist it.
+  */
+  unhush(): void;
 }
 
 class BetterLog implements IPersistedLog {
@@ -74,6 +84,20 @@ class BetterLog implements IPersistedLog {
       console.warn(`WARN: ${tags.join(", ")}: ${msg}`.yellow);
     }
     await this.persistLog("warn", tags, msg);
+  }
+
+  /**
+   * During run time, mute the output and just persist it.
+   */
+  public hush() {
+    this._options.silent = true;
+  }
+
+  /**
+   * During run time, unmute the output - log & persist it.
+   */
+  public unhush() {
+    this._options.silent = false;
   }
 }
 
