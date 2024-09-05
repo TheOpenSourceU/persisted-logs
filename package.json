@@ -1,9 +1,9 @@
 {
   "name": "persisted-logs",
-  "version": "2.5.20240901",
+  "version": "2.6.20240904",
   "description": "(BetterLogs) An always persisted logging library.",
-  "main": "dist/app.mjs",
-  "types": "dist/app.d.mts",
+  "main": "dist/app",
+  "types": "dist/app.d",
   "scripts": {
     "prettier": "prettier --write src/**/*.ts",
     "pretest": "npm run build",
