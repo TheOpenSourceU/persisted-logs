@@ -21,7 +21,8 @@ import WrappedError from "./WrappedError";
 export default class Sqlite3Logger2 {
   private readonly _dbPath: DataStoreType;
   private _db: AsyncDatabase | undefined;
-  public constructor(path:DataStoreType = ":memory:") {
+
+  public constructor(path: DataStoreType = ":memory:") {
     this._dbPath = path;
   }
 
@@ -30,11 +31,13 @@ export default class Sqlite3Logger2 {
     error: 1,
     warn: 2,
     info: 3,
-    debug: 4,
+    debug: 4
   };
 
   private async createDatabase() {
-    const tableExists= await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
+    const tableExists = await this.executeSql<{ name: string }>(SQL.stmtLogTableExists, undefined, true) as {
+      name: string
+    }[];
     if (!tableExists?.length) {
       const dbCreationResults: (RunResult | false | unknown[])[] = [];
 
@@ -42,49 +45,51 @@ export default class Sqlite3Logger2 {
       dbCreationResults.push(await this.executeSql(SQL.logLevelTable));
       dbCreationResults.push(await this.executeSql(SQL.logTags));
       dbCreationResults.push(await this.executeSql(SQL.logTagsTable));
-      for(const levelSql of SQL.logLevelData) {
-        if(!levelSql) continue;
+      for (const levelSql of SQL.logLevelData) {
+        if (!levelSql) continue;
         dbCreationResults.push(await this.executeSql(levelSql));
       }
-      const nowShouldExist = await this.executeSql<{name:string}>(SQL.stmtLogTableExists, undefined, true) as {name:string}[];
-      if(!nowShouldExist?.length) {
-        console.warn('Failed to create log tables.');
+      const nowShouldExist = await this.executeSql<{ name: string }>(SQL.stmtLogTableExists, undefined, true) as {
+        name: string
+      }[];
+      if (!nowShouldExist?.length) {
+        console.warn("Failed to create log tables.");
       }
     }
   }
 
-  public async RecordLog({level, tags, message}: LogRecordType): Promise<void> {
+  public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
     try {
       await this.createDatabase();
 
-      if(!message?.trim()) return;
+      if (!message?.trim()) return;
 
       const tagIds = await this.convertToTagList(tags);
 
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
         $logMessage: message,
-        $logJson: JSON.stringify({ message: message.replace(`"`, "'") }),
+        $logJson: JSON.stringify({ message: message.replace(`"`, "'") })
       };
 
       const sql: string = `
-        insert into app_log (level_id, log_message, json_obj)
-        values ($level, $logMessage, $logJson);
-    `;
+          insert into app_log (level_id, log_message, json_obj)
+          values ($level, $logMessage, $logJson);
+      `;
       const logEntryResult = await this.executeSql(sql, params, false) as RunResult | false;
 
-      if(logEntryResult !== false) {
+      if (logEntryResult !== false) {
         const lastId = logEntryResult?.lastID;
         await this.insertTags(lastId, tagIds);
       }
-    } catch(er) {
+    } catch (er) {
       console.error(er);
     }
   }
 
-  private async executeSql<T>(sql:string, params?: Record<string, CommonType>, incResults:boolean = false): Promise<RunResult | T[] | false> {
+  private async executeSql<T>(sql: string, params?: Record<string, CommonType>, incResults: boolean = false): Promise<RunResult | T[] | false> {
 
-    if(!sql) {
+    if (!sql) {
       return Promise.resolve(false);
     }
 
@@ -92,14 +97,14 @@ export default class Sqlite3Logger2 {
     //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
 
     try {
-      if(incResults) {
+      if (incResults) {
         const d = await db.all<T>(sql, params);
         return d;
       } else {
         const runResult = await db.run(sql, params);
         return runResult;
       }
-    } catch(er) {
+    } catch (er) {
       console.error(`Error processing db statements \n${sql}\n\n`);
       throw new WrappedError(er as Error, "Error processing db statements");
     } finally {
@@ -119,11 +124,11 @@ export default class Sqlite3Logger2 {
   }
 
   private async convertToTagList(tags: string[]) {
-    if(!tags || tags.length === 0) return [];
+    if (!tags || tags.length === 0) return [];
     const tagIds: number[] = [];
-    for(const tag of tags) {
+    for (const tag of tags) {
       const tagId = await this.findTagIdOrCreate(tag);
-      if(tagId > -1) {
+      if (tagId > -1) {
         tagIds.push(tagId);
       }
     }
@@ -131,26 +136,29 @@ export default class Sqlite3Logger2 {
   }
 
 
-
   private async findTagIdOrCreate(tag: string): Promise<number> {
-    if(!tag.trim()) return -1;
+    if (!tag.trim()) return -1;
     tag = tag.trim().toLowerCase();
     const sql: string = `
-      select id from tags where tag = $tag;
+        select id
+        from tags
+        where tag = $tag;
     `;
-    const result = await this.executeSql<{id:number}>(sql, { $tag: tag }, true) as {id:number}[];
-    if(result?.length) {
+    const result = await this.executeSql<{ id: number }>(sql, { $tag: tag }, true) as { id: number }[];
+    if (result?.length) {
       return result[0].id;
     }
     return await this.createTag(tag);
   }
+
   private async createTag(tag: string): Promise<number> {
-    if(!tag.trim()) return -1;
+    if (!tag.trim()) return -1;
     const sql: string = `
-      insert into tags (tag) values ($tag);
+        insert into tags (tag)
+        values ($tag);
     `;
     const queryResults = await this.executeSql(sql, { $tag: tag }, false) as RunResult | false;
-    if(queryResults !== false) {
+    if (queryResults !== false) {
       return queryResults?.lastID;
     }
     return -1;
@@ -158,12 +166,13 @@ export default class Sqlite3Logger2 {
 
 
   private async insertTags(lastId: number, tagIds: number[]) {
-    if(!tagIds || tagIds.length === 0) return;
-    if(!lastId) return;
+    if (!tagIds || tagIds.length === 0) return;
+    if (!lastId) return;
     const sql: string = `
-      insert into log_tags (log_id, tag_id) values ($logId, $tagId);
+        insert into log_tags (log_id, tag_id)
+        values ($logId, $tagId);
     `;
-    for(const tagId of tagIds) {
+    for (const tagId of tagIds) {
       await this.executeSql(sql, { $logId: lastId, $tagId: tagId }, false);
     }
   }

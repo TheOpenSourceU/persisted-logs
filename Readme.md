@@ -1,9 +1,9 @@
 # persisted-logs - A Persistent Logger
 
-A lightweight, efficient logging system designed for both server 
-environments and command-line interface (CLI) applications. Persistent 
-Logger outputs logs to the console and stores them in a SQLite database for 
-easy retrieval and management. Ideal for developers who value long-term data 
+A lightweight, efficient logging system designed for both server
+environments and command-line interface (CLI) applications. Persistent
+Logger outputs logs to the console and stores them in a SQLite database for
+easy retrieval and management. Ideal for developers who value long-term data
 persistence and the flexibility of SQL for data manipulation.
 
 ## Features
@@ -11,13 +11,14 @@ persistence and the flexibility of SQL for data manipulation.
 - **Console & SQLite Logging**: Seamlessly logs messages to both the console and a SQLite database.
 - **Searchable Logs**: Leverage SQL to easily search and filter log data.
 - **Data Persistence**: Designed for long-term data storage, making it easier to track historical log data.
-- **Configurable Data Retention**: (Soon) Includes a mechanism to periodically clean up old data, 
-with customizable settings to manage data retention according to your needs.
+- **Configurable Data Retention**: (Soon) Includes a mechanism to periodically clean up old data,
+  with customizable settings to manage data retention according to your needs.
 
 ## Getting Started
 
 ### Targets
-Generally node.js applications. Not meant for use in the 
+
+Generally node.js applications. Not meant for use in the
 browser since browsers are client side.
 
 ### Installation
@@ -68,9 +69,9 @@ import BetterLog from "persisted-logs";
 
 ### SQL - The Real Power™
 
-Consider the power of SQL in searching and filtering logs. For example, 
+Consider the power of SQL in searching and filtering logs. For example,
 to search for logs with the tag "demo". Consider the benefit of using filters
-to chase down production bugs and such. Use tags to associate session Ids, 
+to chase down production bugs and such. Use tags to associate session Ids,
 user ids or methods to logs.
 
 ```sql
@@ -89,11 +90,14 @@ order by t.created_on desc, al.id desc;
 [https://github.com/TheOpenSourceU/persisted-logs/wiki](https://github.com/TheOpenSourceU/persisted-logs/wiki)
 
 ## License
-This project is open source and available under the MIT License.  
+
+This project is open source and available under the MIT License.
 
 ## Acknowledgments
-Made with ❤️ by Frank Villasenor (https://www.theOpenSourceU.org) for the heck of it. Check out our other projects, 
+
+Made with ❤️ by Frank Villasenor (https://www.theOpenSourceU.org) for the heck of it. Check out our other projects,
 like [AI Poems](https://poems.theOpenSourceU.org/) at https://poems.theOpenSourceU.org/.  
 Support
 
-For support, please open an issue in the GitHub repository or contact the maintainers directly through https://www.theOpenSourceU.org.
+For support, please open an issue in the GitHub repository or contact the maintainers directly
+through https://www.theOpenSourceU.org.

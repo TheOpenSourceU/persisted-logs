@@ -27,13 +27,13 @@ const logTable: SqlString = `create table app_log
 );`;
 
 const logTagsTable: SqlString = `create table log_tags
-    (
-        id           integer not null
-            constraint app_log_pk
-                primary key autoincrement,
-        log_id      integer not null,
-        tag_id      integer not null
-   );`;
+                                 (
+                                     id     integer not null
+                                         constraint app_log_pk
+                                             primary key autoincrement,
+                                     log_id integer not null,
+                                     tag_id integer not null
+                                 );`;
 
 const logTags: SqlString = `create table tags
 (

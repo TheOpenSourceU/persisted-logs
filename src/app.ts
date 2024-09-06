@@ -9,20 +9,24 @@ import Sqlite3Logger2 from "./Sqlite3Logger2";
 
 interface IPersistedLog {
   debug(tags: string[], msg: string): Promise<void>;
+
   error(tags: string[], msg: string): Promise<void>;
+
   info(tags: string[], msg: string): Promise<void>;
+
   log(tags: string[], msg: string): Promise<void>;
+
   warn(tags: string[], msg: string): Promise<void>;
 
 
   /**
-  * During run time, mute the output and just persist it.
-  */
+   * During run time, mute the output and just persist it.
+   */
   hush(): void;
 
   /**
-  * During run time, unmute the output - log & persist it.
-  */
+   * During run time, unmute the output - log & persist it.
+   */
   unhush(): void;
 
   /**
@@ -47,30 +51,30 @@ class BetterLog implements IPersistedLog {
   private _hushNext: boolean;
 
   public constructor(options: Partial<AppOptions>) {
-    this._options = {...this._defaultOptions, ...options };
+    this._options = { ...this._defaultOptions, ...options };
     this._dbLogger = new Sqlite3Logger2(this._options.dbName);
     this._prune = false;
     this._hushNext = false;
   }
 
-  protected async persistLog( level: LogLevelType, tags: string[], msg: string): Promise<void> {
-    await this._dbLogger.RecordLog({level, tags, message: msg});
+  protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
+    await this._dbLogger.RecordLog({ level, tags, message: msg });
 
-    if(this._prune) {
+    if (this._prune) {
       await this._dbLogger.PruneLogs(this._options.prune);
       this._prune = false;
     }
   }
 
   public async debug(tags: string[], msg: string) {
-    if(this.isNotSilent()) {
+    if (this.isNotSilent()) {
       console.log(`DEBUG: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("debug", tags, msg);
   }
 
   public async error(tags: string[], msg: string) {
-    if(this.isNotSilent()) {
+    if (this.isNotSilent()) {
       console.error(`ERROR: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("error", tags, msg);
@@ -81,14 +85,14 @@ class BetterLog implements IPersistedLog {
   }
 
   public async info(tags: string[], msg: string) {
-    if(this.isNotSilent()) {
+    if (this.isNotSilent()) {
       console.log(`INFO: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("info", tags, msg);
   }
 
   public async warn(tags: string[], msg: string) {
-    if(this.isNotSilent()) {
+    if (this.isNotSilent()) {
       console.warn(`WARN: ${tags.join(", ")}: ${msg}`);
     }
     await this.persistLog("warn", tags, msg);
@@ -117,7 +121,7 @@ class BetterLog implements IPersistedLog {
   }
 
   private isNextHushed(): boolean {
-    if(this._hushNext) {
+    if (this._hushNext) {
       this._hushNext = false;
       return true;
     }
@@ -125,7 +129,7 @@ class BetterLog implements IPersistedLog {
   }
 
   private isNotSilent(): boolean {
-    return !(this.isNextHushed() || this._options.silent)
+    return !(this.isNextHushed() || this._options.silent);
   }
 }
 

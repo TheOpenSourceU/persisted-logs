@@ -10,9 +10,9 @@ module.exports = {
     "^.+\\.tsx?$": [
       "ts-jest",
       {
-        tsconfig: "tsconfig.json",
-      },
-    ],
+        tsconfig: "tsconfig.json"
+      }
+    ]
   },
   //testRegex: "(/__tests__/.*|(.|/)(test|spec)).tsx?$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
@@ -35,5 +35,5 @@ module.exports = {
   testTimeout: 10000,
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test.
-  setupFilesAfterEnv: ["./jest.setup.ts"],
+  setupFilesAfterEnv: ["./jest.setup.ts"]
 };

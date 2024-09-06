@@ -1,8 +1,7 @@
-
 export type CommonType = string | number | boolean | undefined;
 //export type CommonTypes = Record<string, CommonType> | CommonType[];
 
-export type LogLevelType = "warn" | 'info' | 'error' | 'debug';
+export type LogLevelType = "warn" | "info" | "error" | "debug";
 export type DataStoreType = ":memory:" | string;
 
 export type AppOptions = {
