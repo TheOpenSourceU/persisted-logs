@@ -3,6 +3,7 @@ import SQL from "./SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
 import WrappedError from "./WrappedError";
+import BetterLog from "./app";
 
 // Under_Dev:
 //  this isn't quite working yet. The observed problem is that there
@@ -69,7 +70,7 @@ export default class Sqlite3Logger2 {
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
         $logMessage: message,
-        $logJson: JSON.stringify({ message: message.replace(`"`, "'") })
+        $logJson: JSON.stringify({ level, message: message.replace(`"`, "'"), "created":new Date().toJSON() })
       };
 
       const sql: string = `
@@ -93,34 +94,33 @@ export default class Sqlite3Logger2 {
       return Promise.resolve(false);
     }
 
-    const db = this._db ? this._db : (this._db = await AsyncDatabase.open(this._dbPath));
-    //db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
+    this._db = await AsyncDatabase.open(this._dbPath);
+    //this._db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
 
     try {
       if (incResults) {
-        const d = await db.all<T>(sql, params);
+        const d = await this._db.all<T>(sql, params);
         return d;
       } else {
-        const runResult = await db.run(sql, params);
+        const runResult = await this._db.run(sql, params);
         return runResult;
       }
     } catch (er) {
-      console.error(`Error processing db statements \n${sql}\n\n`);
+      console.error(`Error (${er}) processing db statements \n${sql}\n\n`);
       throw new WrappedError(er as Error, "Error processing db statements");
     } finally {
       // TODO: Determine if this is needed. I think it wasn't
-      //  writing to disk without it thought
+      //  writing to disk without it though.
+      await this._db.close();
       this._db = undefined;
-      await db.close();
     }
   }
 
   public async PruneLogs(prune: number) {
-    // const sql: string = `
-    //     delete from main.app_log where created_on < datetime('now', '-100 days');
-    // `;
-    // return await this.executeSql(sql, { $prune: `-${prune} days` });
-    return Promise.resolve(); // Address later.
+    const sql: string = `
+        delete from main.app_log where created_on < datetime('now', $prune);
+    `;
+    return await this.executeSql(sql, { $prune: `-${prune} hours` });
   }
 
   private async convertToTagList(tags: string[]) {

@@ -5,7 +5,7 @@
 
 import { AppOptions, LogLevelType } from "./types";
 import Sqlite3Logger2 from "./Sqlite3Logger2";
-
+import colors from "colors";
 
 interface IPersistedLog {
   debug(tags: string[], msg: string): Promise<void>;
@@ -28,12 +28,6 @@ interface IPersistedLog {
    * During run time, unmute the output - log & persist it.
    */
   unhush(): void;
-
-  /**
-   * During run time, mute the output for the
-   * next message and just persist it.
-   */
-  hushNext(): void;
 }
 
 class BetterLog implements IPersistedLog {
@@ -48,13 +42,14 @@ class BetterLog implements IPersistedLog {
   };
   private readonly _dbLogger: Sqlite3Logger2;
   private _prune: boolean;
-  private _hushNext: boolean;
+  private _useColors: boolean;
 
   public constructor(options: Partial<AppOptions>) {
     this._options = { ...this._defaultOptions, ...options };
     this._dbLogger = new Sqlite3Logger2(this._options.dbName);
     this._prune = false;
-    this._hushNext = false;
+    this._useColors = this._options?.useColor || false;
+    this._useColors ? colors.enable() : colors.disable();
   }
 
   protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
@@ -65,17 +60,24 @@ class BetterLog implements IPersistedLog {
       this._prune = false;
     }
   }
+  protected formatTags(tags: string[]): string {
+    const tagsString = tags.join(";");
+    return `\t[${tagsString}]\t`;
+  }
 
   public async debug(tags: string[], msg: string) {
     if (this.isNotSilent()) {
-      console.log(`DEBUG: ${tags.join(", ")}: ${msg}`);
+
+      const message = `DEBUG: ${this.formatTags(tags)} ${msg}`;
+      console.log(this._useColors ? colors.grey(message) : message);
     }
     await this.persistLog("debug", tags, msg);
   }
 
   public async error(tags: string[], msg: string) {
     if (this.isNotSilent()) {
-      console.error(`ERROR: ${tags.join(", ")}: ${msg}`);
+      const message = `ERROR: ${this.formatTags(tags)} ${msg}\t${new Date().toJSON()}]`;
+      console.error(this._useColors ? colors.red(message) : message);
     }
     await this.persistLog("error", tags, msg);
   }
@@ -86,14 +88,16 @@ class BetterLog implements IPersistedLog {
 
   public async info(tags: string[], msg: string) {
     if (this.isNotSilent()) {
-      console.log(`INFO: ${tags.join(", ")}: ${msg}`);
+      const message = `INFO: ${this.formatTags(tags)} ${msg}`;
+      console.log(this._useColors ? colors.green(message) : message);
     }
     await this.persistLog("info", tags, msg);
   }
 
   public async warn(tags: string[], msg: string) {
     if (this.isNotSilent()) {
-      console.warn(`WARN: ${tags.join(", ")}: ${msg}`);
+      const message = `WARN: ${this.formatTags(tags)} ${msg}`;
+      console.log(this._useColors ? colors.yellow(message) : message);
     }
     await this.persistLog("warn", tags, msg);
   }
@@ -112,24 +116,26 @@ class BetterLog implements IPersistedLog {
     this._options.silent = false;
   }
 
-  /**
-   * During run time, mute the output for the
-   * next message and just persist it.
-   */
-  public hushNext() {
-    this._hushNext = true;
-  }
-
-  private isNextHushed(): boolean {
-    if (this._hushNext) {
-      this._hushNext = false;
-      return true;
-    }
-    return false;
-  }
+  // /**
+  //  * During run time, mute the output for the
+  //  * next message and just persist it.
+  //
+  // This Concept did not work.
+  //  */
+  // public hushNext() {
+  //   this._hushNext = true;
+  // }
+  //
+  // private isNextHushed(): boolean {
+  //   if (this._hushNext) {
+  //     this._hushNext = false;
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   private isNotSilent(): boolean {
-    return !(this.isNextHushed() || this._options.silent);
+    return !(this._options.silent);
   }
 }
 

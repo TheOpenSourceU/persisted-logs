@@ -23,9 +23,26 @@ import BetterLog from "./src/app";
     await bl.error(["demo", "hush test", "hush-test"], "This includes error messages. Again, all of these still go to the persistent log.");
     bl.unhush();
     await bl.info(["demo", "hush test", "hush-test", "unhush"], `Since Unhush has been called, this will go to the console.`);
-    bl.hushNext();
-    await bl.warn(["demo", "hush test", "hush-test", "hushNext"], `This will be hushed since hushNext() was called.`);
-    await bl.info(["demo", "hush test", "hush-test", "hushNext"], `This will not be hushed though. It will go to the console.`);
+  } catch (er) {
+    const _null = "[null]";
+    console.error(er?.toString() || _null);
+    await bl.error([], er?.toString() || _null);
+  }
+
+  try {
+    const loops = 99999;
+    let hushToggle = false
+    for(let i = 0; i < loops; i++) {
+      if(i % 1000 === 0) {
+        hushToggle = !hushToggle;
+        if(hushToggle) {
+          bl.hush();
+        } else {
+          bl.unhush();
+        }
+      }
+      await bl.debug(["demo", "loop-test"], `Loop test ${i} of ${loops} (${i/loops}) ${hushToggle}`);
+    }
   } catch (er) {
     const _null = "[null]";
     console.error(er?.toString() || _null);

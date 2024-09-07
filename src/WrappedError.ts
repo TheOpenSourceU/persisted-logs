@@ -1,5 +1,4 @@
 export default class WrappedError extends Error {
-  private readonly _message: string;
   public readonly message: string;
   public readonly error: Error;
 
@@ -7,10 +6,10 @@ export default class WrappedError extends Error {
     super(message);
     this.error = error;
     this.message = message;
-    this._message = message;
+    console.debug(`WrappedError: ${this.toString()}`);
   }
 
   public override toString(): string {
-    return `${this._message} ${this.error?.toString()}`;
+    return `${this.message} ${this.error?.toString()} ${this.error?.stack}`;
   }
 }
