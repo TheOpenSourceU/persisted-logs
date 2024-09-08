@@ -55,10 +55,12 @@ class BetterLog implements IPersistedLog {
   protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
     await this._dbLogger.RecordLog({ level, tags, message: msg });
 
-    if (this._prune) {
-      await this._dbLogger.PruneLogs(this._options.prune);
-      this._prune = false;
-    }
+
+    // Under_Dev: is this causing that SQLIte mis use error?
+    // if (this._prune) {
+    //   await this._dbLogger.PruneLogs(this._options.prune);
+    //   this._prune = false;
+    // }
   }
   protected formatTags(tags: string[]): string {
     const tagsString = tags.join(";");
@@ -136,6 +138,10 @@ class BetterLog implements IPersistedLog {
 
   private isNotSilent(): boolean {
     return !(this._options.silent);
+  }
+
+  public async Close() {
+    await this._dbLogger.Close();
   }
 }
 

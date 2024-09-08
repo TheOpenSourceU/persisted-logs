@@ -3,7 +3,7 @@ import SQL from "./SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
 import WrappedError from "./WrappedError";
-import BetterLog from "./app";
+import Bluebird from 'bluebird';
 
 // Under_Dev:
 //  this isn't quite working yet. The observed problem is that there
@@ -15,6 +15,24 @@ import BetterLog from "./app";
 // The problem is mixing of promises and non promises.
 //  That just doesn't work as I need. So, lets flip over to a full
 // async interface.
+
+
+// class Mutex {
+//   private mutex = Promise.resolve();
+//
+//   lock(): Promise<() => void> {
+//     let begin: (unlock: () => void) => void = (unlock) => {};
+//
+//     this.mutex = this.mutex.then(() => {
+//       return new Promise(begin);
+//     });
+//
+//     return new Promise((res) => {
+//       begin = res;
+//     });
+//   }
+// }
+// const mutex = new Mutex();
 
 /**
  * Logger that logs to a sqlite3 database.
@@ -85,19 +103,26 @@ export default class Sqlite3Logger2 {
       }
     } catch (er) {
       console.error(er);
+      throw new WrappedError(er as Error, "Error recording log");
     }
   }
 
+  /**
+   * Execute a SQL statement.
+   * @param sql
+   * @param params
+   * @param incResults
+   * @private
+   */
   private async executeSql<T>(sql: string, params?: Record<string, CommonType>, incResults: boolean = false): Promise<RunResult | T[] | false> {
-
-    if (!sql) {
+    if (!sql.trim()) {
       return Promise.resolve(false);
     }
 
-    this._db = await AsyncDatabase.open(this._dbPath);
-    //this._db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
-
     try {
+      this._db = this._db || await AsyncDatabase.open(this._dbPath);
+      //this._db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
+
       if (incResults) {
         const d = await this._db.all<T>(sql, params);
         return d;
@@ -106,19 +131,29 @@ export default class Sqlite3Logger2 {
         return runResult;
       }
     } catch (er) {
+      await this._db?.close();
+      this._db = await AsyncDatabase.open(this._dbPath);
+
       console.error(`Error (${er}) processing db statements \n${sql}\n\n`);
       throw new WrappedError(er as Error, "Error processing db statements");
     } finally {
-      // TODO: Determine if this is needed. I think it wasn't
-      //  writing to disk without it though.
-      await this._db.close();
-      this._db = undefined;
+      // // TODO: Determine if this is needed. I think it wasn't
+      // //  writing to disk without it though.
+      // await this._db?.close();
+      // this._db = undefined;
     }
+  }
+
+  public async Close() {
+    const db = this._db;
+    this._db = undefined;
+    if (db) await db.close();
   }
 
   public async PruneLogs(prune: number) {
     const sql: string = `
-        delete from main.app_log where created_on < datetime('now', $prune);
+        delete from main.app_log 
+               where created_on < datetime('now', $prune);
     `;
     return await this.executeSql(sql, { $prune: `-${prune} hours` });
   }
