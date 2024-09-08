@@ -1,8 +1,3 @@
-//
-// The entry point.
-// We should follow the wiki guide
-// at: https://github.com/TheOpenSourceU/persisted-logs/wiki
-
 import { AppOptions, LogLevelType } from "./types";
 import Sqlite3Logger2 from "./Sqlite3Logger2";
 import colors from "colors";
@@ -102,6 +97,25 @@ class BetterLog implements IPersistedLog {
       console.log(this._useColors ? colors.yellow(message) : message);
     }
     await this.persistLog("warn", tags, msg);
+  }
+
+  public async time(name:string, tags: string[], msg: string) {
+    if (this.isNotSilent()) {
+      const message = `TIME: ${this.formatTags(tags)} ${msg}`;
+      console.timeLog(name, this._useColors ? colors.cyan(message) : message);
+    }
+    // TODO: How to handle this?
+    //  Think we need an internal timer or something. Cant' really get it from timeEnd.
+    //await this.persistLog("time", tags, msg); //Tiem stamps are in the database.... High enough precision though?
+  }
+  public async timeEnd(name:string, tags: string[], msg: string) {
+    if (this.isNotSilent()) {
+      console.timeEnd(name);
+      const message = `TIME: ${this.formatTags(tags)} ${msg}`;
+      console.log(this._useColors ? colors.cyan(message) : message);
+    }
+    // TODO: How to handle this?
+    //await this.persistLog("time", tags, msg);
   }
 
   /**
