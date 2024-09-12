@@ -3,36 +3,7 @@ import SQL from "./SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
 import WrappedError from "./WrappedError";
-import Bluebird from 'bluebird';
-
-// Under_Dev:
-//  this isn't quite working yet. The observed problem is that there
-//  is only one message that shows up. everything else seems lost.
-//  I'm thinking the problem is my usage of the sqlite3 lib. I'm doing
-//  something wrong or it's not working as I expect.
-//  -
-//  Tried an Async version and, still the same issue... No.
-// The problem is mixing of promises and non promises.
-//  That just doesn't work as I need. So, lets flip over to a full
-// async interface.
-
-
-// class Mutex {
-//   private mutex = Promise.resolve();
-//
-//   lock(): Promise<() => void> {
-//     let begin: (unlock: () => void) => void = (unlock) => {};
-//
-//     this.mutex = this.mutex.then(() => {
-//       return new Promise(begin);
-//     });
-//
-//     return new Promise((res) => {
-//       begin = res;
-//     });
-//   }
-// }
-// const mutex = new Mutex();
+import TagTracker from "./TagTracker";
 
 /**
  * Logger that logs to a sqlite3 database.
@@ -40,17 +11,20 @@ import Bluebird from 'bluebird';
 export default class Sqlite3Logger2 {
   private readonly _dbPath: DataStoreType;
   private _db: AsyncDatabase | undefined;
-
+  private readonly _TagTracker: TagTracker = new TagTracker();
+  private readonly auditLogTags: string[] = [];
+  private readonly auditLogTagsSet: Set<string> = new Set<string>();
+  
   public constructor(path: DataStoreType = ":memory:") {
     this._dbPath = path;
   }
-
 
   private static readonly errorLogMap: { [key in LogLevelType]: number } = {
     error: 1,
     warn: 2,
     info: 3,
-    debug: 4
+    debug: 4,
+    time: 5
   };
 
   private async createDatabase() {
@@ -79,11 +53,9 @@ export default class Sqlite3Logger2 {
 
   public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
     try {
-      await this.createDatabase();
-
       if (!message?.trim()) return;
 
-      const tagIds = await this.convertToTagList(tags);
+      await this.createDatabase();
 
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
@@ -96,10 +68,17 @@ export default class Sqlite3Logger2 {
           values ($level, $logMessage, $logJson);
       `;
       const logEntryResult = await this.executeSql(sql, params, false) as RunResult | false;
-
+      
+      
+      // const tagIds = await this.convertToTagList(tags);
       if (logEntryResult !== false) {
         const lastId = logEntryResult?.lastID;
-        await this.insertTags(lastId, tagIds);
+        if (lastId === undefined) {
+          console.error("Failed to get last id from log entry.");
+          return;
+        }
+        await this.insertTags2(lastId, tags);
+        // await this.insertTags(lastId, tagIds);
       }
     } catch (er) {
       console.error(er);
@@ -159,12 +138,22 @@ export default class Sqlite3Logger2 {
   }
 
   private async convertToTagList(tags: string[]) {
-    if (!tags || tags.length === 0) return [];
-    const tagIds: number[] = [];
+    const tagIds: Set<number> = new Set<number>();
+    if (!tags || tags.length === 0) return tagIds;
+
+    // this.auditLogTags.push(...tags);
+    // for (const tag of tags) {
+    //   if (this.auditLogTagsSet.has(tag)) {
+    //     console.log('duplicate tag', tag);
+    //   } else {
+    //     this.auditLogTagsSet.add(tag);
+    //   }
+    // }
+    
     for (const tag of tags) {
       const tagId = await this.findTagIdOrCreate(tag);
       if (tagId > -1) {
-        tagIds.push(tagId);
+        tagIds.add(tagId);
       }
     }
     return tagIds;
@@ -174,10 +163,16 @@ export default class Sqlite3Logger2 {
   private async findTagIdOrCreate(tag: string): Promise<number> {
     if (!tag.trim()) return -1;
     tag = tag.trim().toLowerCase();
+    
+    if (this._TagTracker.has(tag)) {
+      return this._TagTracker.get(tag);  
+    }
+    
     const sql: string = `
         select id
         from tags
-        where tag = $tag;
+        where tag = $tag
+        order by id;
     `;
     const result = await this.executeSql<{ id: number }>(sql, { $tag: tag }, true) as { id: number }[];
     if (result?.length) {
@@ -194,15 +189,17 @@ export default class Sqlite3Logger2 {
     `;
     const queryResults = await this.executeSql(sql, { $tag: tag }, false) as RunResult | false;
     if (queryResults !== false) {
+      this._TagTracker.add(tag, queryResults?.lastID);
       return queryResults?.lastID;
     }
     return -1;
   }
 
-
-  private async insertTags(lastId: number, tagIds: number[]) {
-    if (!tagIds || tagIds.length === 0) return;
+  private async insertTags2(lastId: number, tags: string[]) {
+    if (!tags || tags.length === 0) return;
     if (!lastId) return;
+    
+    const tagIds = await this.convertToTagList(tags);
     const sql: string = `
         insert into log_tags (log_id, tag_id)
         values ($logId, $tagId);
