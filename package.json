@@ -1,13 +1,14 @@
 {
   "name": "persisted-logs",
-  "version": "2.9.20240907",
+  "version": "2.10.20240911",
   "description": "(BetterLogs) An always persisted logging library.",
   "main": "dist/app.js",
   "types": "dist/app.d.ts",
+  
   "scripts": {
     "prettier": "prettier --write src/**/*.ts",
     "test": "jest",
-    "build": "tsup",
+    "build": "NODE_ENV=development tsup",
     "build:prod":"NODE_ENV=production tsup",
     "_publish": "NODE_ENV=production npm publish",
     "start:_": "ts-node src/test.ts",
