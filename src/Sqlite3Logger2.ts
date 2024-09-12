@@ -3,7 +3,6 @@ import SQL from "./SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
 import WrappedError from "./WrappedError";
-import TagTracker from "./TagTracker";
 
 /**
  * Logger that logs to a sqlite3 database.
@@ -11,9 +10,6 @@ import TagTracker from "./TagTracker";
 export default class Sqlite3Logger2 {
   private readonly _dbPath: DataStoreType;
   private _db: AsyncDatabase | undefined;
-  private readonly _TagTracker: TagTracker = new TagTracker();
-  private readonly auditLogTags: string[] = [];
-  private readonly auditLogTagsSet: Set<string> = new Set<string>();
   
   public constructor(path: DataStoreType = ":memory:") {
     this._dbPath = path;
@@ -69,8 +65,6 @@ export default class Sqlite3Logger2 {
       `;
       const logEntryResult = await this.executeSql(sql, params, false) as RunResult | false;
       
-      
-      // const tagIds = await this.convertToTagList(tags);
       if (logEntryResult !== false) {
         const lastId = logEntryResult?.lastID;
         if (lastId === undefined) {
@@ -78,7 +72,6 @@ export default class Sqlite3Logger2 {
           return;
         }
         await this.insertTags2(lastId, tags);
-        // await this.insertTags(lastId, tagIds);
       }
     } catch (er) {
       console.error(er);
@@ -100,7 +93,6 @@ export default class Sqlite3Logger2 {
 
     try {
       this._db = this._db || await AsyncDatabase.open(this._dbPath);
-      //this._db.inner.on("trace", (sql) => console.log("[TRACE]", sql));
 
       if (incResults) {
         const d = await this._db.all<T>(sql, params);
@@ -140,15 +132,6 @@ export default class Sqlite3Logger2 {
   private async convertToTagList(tags: string[]) {
     const tagIds: Set<number> = new Set<number>();
     if (!tags || tags.length === 0) return tagIds;
-
-    // this.auditLogTags.push(...tags);
-    // for (const tag of tags) {
-    //   if (this.auditLogTagsSet.has(tag)) {
-    //     console.log('duplicate tag', tag);
-    //   } else {
-    //     this.auditLogTagsSet.add(tag);
-    //   }
-    // }
     
     for (const tag of tags) {
       const tagId = await this.findTagIdOrCreate(tag);
@@ -163,10 +146,6 @@ export default class Sqlite3Logger2 {
   private async findTagIdOrCreate(tag: string): Promise<number> {
     if (!tag.trim()) return -1;
     tag = tag.trim().toLowerCase();
-    
-    if (this._TagTracker.has(tag)) {
-      return this._TagTracker.get(tag);  
-    }
     
     const sql: string = `
         select id
@@ -189,7 +168,6 @@ export default class Sqlite3Logger2 {
     `;
     const queryResults = await this.executeSql(sql, { $tag: tag }, false) as RunResult | false;
     if (queryResults !== false) {
-      this._TagTracker.add(tag, queryResults?.lastID);
       return queryResults?.lastID;
     }
     return -1;
