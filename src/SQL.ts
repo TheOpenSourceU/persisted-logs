@@ -61,7 +61,9 @@ const logLevelData: SqlString[] = `
   INSERT INTO log_level (id, level)
   SELECT 4, 'Debug'
   WHERE NOT EXISTS (SELECT 1 FROM log_level WHERE id = 4);
-`.split("\n\n");
+`.split(`
+  
+  `).filter(i => i.trim()).map(i => i.trim());
 
 // const logLevelData: SqlString[] = `
 //   INSERT INTO log_level (id, level) VALUES (1, 'Error');
