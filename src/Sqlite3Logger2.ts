@@ -3,11 +3,12 @@ import SQL from "./SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
 import WrappedError from "./WrappedError";
+import { IBetterLogLogger } from "./IBetterLogLogger";
 
 /**
- * Logger that logs to a sqlite3 database.
+ * Logger that logs to sqlite3 database.
  */
-export default class Sqlite3Logger2 {
+export default class Sqlite3Logger2 implements IBetterLogLogger {
   private readonly _dbPath: DataStoreType;
   private _db: AsyncDatabase | undefined;
   
@@ -23,7 +24,7 @@ export default class Sqlite3Logger2 {
     time: 5
   };
 
-  private async createDatabase() {
+  async createDatabase() {
     const tableExists = await this.executeSql<{ name: string }>(SQL.stmtLogTableExists, undefined, true) as {
       name: string
     }[];
@@ -47,16 +48,16 @@ export default class Sqlite3Logger2 {
     }
   }
 
-  public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
+  async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
     try {
-      if (!message?.trim()) return;
+      if (!message || !message.trim()) return; //TODO: verify bug fix. 
 
       await this.createDatabase();
 
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
         $logMessage: message,
-        $logJson: JSON.stringify({ level, message: message.replace(`"`, "'"), "created":new Date().toJSON() })
+        $logJson: JSON.stringify({ level, message: message.replace(`"`, "'"), "created": new Date().toJSON() })
       };
 
       const sql: string = `
@@ -64,7 +65,7 @@ export default class Sqlite3Logger2 {
           values ($level, $logMessage, $logJson);
       `;
       const logEntryResult = await this.executeSql(sql, params, false) as RunResult | false;
-      
+
       if (logEntryResult !== false) {
         const lastId = logEntryResult?.lastID;
         if (lastId === undefined) {
@@ -74,7 +75,6 @@ export default class Sqlite3Logger2 {
         await this.insertTags2(lastId, tags);
       }
     } catch (er) {
-      console.error(er);
       throw new WrappedError(er as Error, "Error recording log");
     }
   }
@@ -115,24 +115,25 @@ export default class Sqlite3Logger2 {
     }
   }
 
-  public async Close() {
+  async Close() {
     const db = this._db;
     this._db = undefined;
     if (db) await db.close();
   }
 
-  public async PruneLogs(prune: number) {
+  async PruneLogs(prune: number) {
     const sql: string = `
-        delete from main.app_log 
-               where created_on < datetime('now', $prune);
+        delete
+        from main.app_log
+        where created_on < datetime('now', $prune);
     `;
     return await this.executeSql(sql, { $prune: `-${prune} hours` });
   }
 
-  private async convertToTagList(tags: string[]) {
+  async convertToTagList(tags: string[]) {
     const tagIds: Set<number> = new Set<number>();
     if (!tags || tags.length === 0) return tagIds;
-    
+
     for (const tag of tags) {
       const tagId = await this.findTagIdOrCreate(tag);
       if (tagId > -1) {
@@ -143,10 +144,10 @@ export default class Sqlite3Logger2 {
   }
 
 
-  private async findTagIdOrCreate(tag: string): Promise<number> {
+  async findTagIdOrCreate(tag: string): Promise<number> {
     if (!tag.trim()) return -1;
     tag = tag.trim().toLowerCase();
-    
+
     const sql: string = `
         select id
         from tags
@@ -160,7 +161,7 @@ export default class Sqlite3Logger2 {
     return await this.createTag(tag);
   }
 
-  private async createTag(tag: string): Promise<number> {
+  async createTag(tag: string): Promise<number> {
     if (!tag.trim()) return -1;
     const sql: string = `
         insert into tags (tag)
