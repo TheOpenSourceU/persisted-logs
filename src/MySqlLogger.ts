@@ -60,6 +60,7 @@ export default class MySqlLogger implements IBetterLogLogger {
       }
     }
     const inserted = await this._db.manager.save(log);
+
     console.debug("inserted", inserted);
   }
 
@@ -89,14 +90,15 @@ export default class MySqlLogger implements IBetterLogLogger {
 
     const logLevels = await this._db.manager.find(LogLevel);
     if(logLevels.length === 0) {
-      const defaultLogLevels = ["error", "warn", "info", "debug", "time"].map(l => {
-        const ll = new LogLevel();
-        ll.level = l;
-        return ll;
-      });
-      await this._db.manager.save(defaultLogLevels);
+      // LogLevelType
+      const defaultLogLevels = ["error", "warn", "info", "debug", "time"];
+      for await (const logLevel of defaultLogLevels) {
+        this._db.manager.create(LogLevel, {
+          level: logLevel
+        });
+      }
     }
-    this._logLevels = await this._db.manager.find(LogLevel);
+    this._logLevels = await this._db.manager.find(LogLevel, { order: { id: "ASC" } });
   }
 
   public async findTagIdOrCreate(tag: string): Promise<number> {
@@ -110,15 +112,14 @@ export default class MySqlLogger implements IBetterLogLogger {
     tag = (tag ?? "").trim().toLowerCase();
     if(!tag) return null;
 
-    const _tagRec = await this._db.manager.findOneBy(Tag, {tag});
-    if(_tagRec) {
-      return _tagRec;
+    const manager = this._db.manager;
+    const tagExists = await manager.existsBy(Tag, {tag});
+    if(tagExists) {
+      return await manager.findOneBy(Tag, {tag});
     } else {
-      const newTag = new Tag();
-      newTag.tag = tag;
-      const insertedTag = await this._db.manager.save(newTag);
-      return insertedTag;
+      return manager.create(Tag, { tag });
     }
+
   }
 
 }
