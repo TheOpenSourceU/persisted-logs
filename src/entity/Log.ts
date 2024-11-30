@@ -5,7 +5,7 @@ import {
   OneToOne,
   JoinColumn,
   ManyToMany,
-  JoinTable,
+  JoinTable, OneToMany, ManyToOne
 } from "typeorm";
 import { LogLevel } from "./LogLevel";
 import { Tag } from "./Tag";
@@ -15,8 +15,9 @@ export class Log {
   @PrimaryGeneratedColumn()
   declare id: number;
 
-  @OneToOne(() => LogLevel, { nullable: false })
-  @JoinColumn()
+
+  //@OneToOne(() => LogLevel)
+  @ManyToOne(() => LogLevel, logLevel => logLevel.logs, { cascade: true })
   declare logLevel: LogLevel;
 
   @Column({ type: "text", nullable: false })

@@ -6,6 +6,7 @@ import { DataSource } from "typeorm";
 import { Log } from "./entity/Log";
 import { Tag } from "./entity/Tag";
 import { LogLevel } from "./entity/LogLevel";
+import { log } from "node:util";
 
 // .then(async () => {
 //
@@ -37,7 +38,7 @@ export default class MySqlLogger implements IBetterLogLogger {
   private _logLevels: LogLevel[];
 
   public async Close(): Promise<void> {
-    await this._db.destroy()
+    await this._db.destroy();
     return;
   }
 
@@ -46,22 +47,43 @@ export default class MySqlLogger implements IBetterLogLogger {
   }
 
   public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
-    const log = new Log();
-    log.message = message;
-    log.tags = [];
-    log.logLevel = this._logLevels.find(itm => itm.level === level) as LogLevel;
+    // const log = new Log();
+    // log.message = message;
+    // log.tags = [];
+    // log.logLevel = this._logLevels.find(itm => itm.level === level) as LogLevel;
+    // log.createdOn = new Date();
+    console.time('start of transaction RecordLog');
 
-    const tagIdSet = new Set<number>();
-    for (const tag of tags) {
-      const t = await this._findTagIdOrCreate(tag);
-      if(t && !tagIdSet.has(t.id)) {
-        log.tags.push(t);
-        tagIdSet.add(t.id);
+    await this._db.manager.transaction(async () => {
+
+      const currentTagCount = async () => await this._db.manager.count(Tag);
+      const currentLogCount = async () => await this._db.manager.count(Log);
+
+      console.log('currentTagCount', await currentTagCount());
+      console.log('currentLogCount', await currentLogCount());
+
+      const tagsList: Tag[] = [];
+      const tagIdSet = new Set<number>();
+      for (const tag of tags) {
+        const t = await this._findTagIdOrCreate(tag);
+        if(t && !tagIdSet.has(t.id)) {
+          tagsList.push(t);
+          tagIdSet.add(t.id);
+        }
       }
-    }
-    const inserted = await this._db.manager.save(log);
 
-    console.debug("inserted", inserted);
+      const data = {
+        message,
+        tags: tagsList,
+        logLevel: this._logLevels.find(itm => itm.level === level) as LogLevel,
+        createdOn: new Date()
+      };
+      console.log('data', data);
+      const inserted = await this._db.manager.insert(Log, data);
+      console.debug("inserted", inserted);
+    });
+    console.debug("end of transaction RecordLog");
+    console.timeEnd('start of transaction RecordLog');
   }
 
   public async createTag(tag: string): Promise<number> {
@@ -93,7 +115,7 @@ export default class MySqlLogger implements IBetterLogLogger {
       // LogLevelType
       const defaultLogLevels = ["error", "warn", "info", "debug", "time"];
       for await (const logLevel of defaultLogLevels) {
-        this._db.manager.create(LogLevel, {
+        await this._db.manager.insert(LogLevel, {
           level: logLevel
         });
       }
@@ -117,9 +139,8 @@ export default class MySqlLogger implements IBetterLogLogger {
     if(tagExists) {
       return await manager.findOneBy(Tag, {tag});
     } else {
-      return manager.create(Tag, { tag });
+      const tagInsertResult = await manager.insert(Tag, { tag });
+      return await manager.findOneBy(Tag, {id: tagInsertResult.identifiers[0].id});
     }
-
   }
-
 }

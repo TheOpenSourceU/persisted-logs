@@ -5,7 +5,6 @@ import { Log } from "./entity/Log";
 import { Tag } from "./entity/Tag";
 import { App } from "./entity/App";
 
-console.log('TypeOrmDataSource: Loading...');
 export const TypeOrmDataSource = new DataSource({
     type: "mysql",
     host: "192.168.1.24",
@@ -14,9 +13,8 @@ export const TypeOrmDataSource = new DataSource({
     password: "app_user01",
     database: "betterlog_dev",
     synchronize: true,
-    logging: true,
+    logging: false,
     entities: [LogLevel,Log,Tag,App],
     migrations: [],
     subscribers: [],
 });
-console.log('TypeOrmDataSource: Loaded');

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Log } from "./Log";
 
 @Entity()
 export class LogLevel {
@@ -7,4 +8,7 @@ export class LogLevel {
 
   @Column()
   declare level: string;
+
+  @OneToMany(() => Log, log => log.logLevel)
+  declare logs: Log[]
 }

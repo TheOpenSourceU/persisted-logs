@@ -211,7 +211,7 @@ class BetterLog2 implements IPersistedLog {
       const message = `INFO: ${this.formatTags(tags)} ${msg}`;
       console.log(this._useColors ? colors.green(message) : message);
     }
-    await this.persistLog("info", tags, msg);
+    return await this.persistLog("info", tags, msg);
   }
 
   public async warn(tags: string[], msg: string) {
@@ -219,7 +219,7 @@ class BetterLog2 implements IPersistedLog {
       const message = `WARN: ${this.formatTags(tags)} ${msg}`;
       console.log(this._useColors ? colors.yellow(message) : message);
     }
-    await this.persistLog("warn", tags, msg);
+    return await this.persistLog("warn", tags, msg);
   }
 
   public async time(name:string, tags: string[], msg: string) {
