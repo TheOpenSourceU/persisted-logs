@@ -4,6 +4,7 @@ import Sqlite3Logger2 from "./Sqlite3Logger2";
 import colors from "colors";
 import { IBetterLogLogger } from "./IBetterLogLogger";
 import MySqlLogger from "./MySqlLogger";
+import { suite } from "node:test";
 
 interface IPersistedLog {
   debug(tags: string[], msg: string): Promise<void>;
@@ -21,9 +22,16 @@ interface IPersistedLog {
   timeEnd(name: string, tags: string[], msg: string): Promise<void>;
 }
 
-class BetterLog implements IPersistedLog {
-  private _options: AppOptions;
-  private readonly _defaultOptions: AppOptions = {
+abstract class PL implements IPersistedLog {
+  protected _prune: boolean;
+  protected _useColors: boolean;
+  protected _defaultSilentSetting:LogLevelType[];
+
+  protected readonly _silentAll: LogLevelType[] = ["info", "warn", "debug", "error", "time"];
+  protected readonly _silentNone: LogLevelType[] = [];
+
+  protected _options: AppOptions;
+  protected readonly _defaultOptions: AppOptions = {
     appTitle: "BetterLogs",
     dbName: "better-logs.db",
     usePrefix: false,
@@ -31,29 +39,51 @@ class BetterLog implements IPersistedLog {
     prune: 10,
     useColor: true,
   };
-  private readonly _dbLogger: Sqlite3Logger2;
-  private _prune: boolean;
-  private _useColors: boolean;
-  private _defaultSilentSetting:LogLevelType[];
-  private readonly _silentAll: LogLevelType[] = ["info", "warn", "debug", "error", "time"];
-  private readonly _silentNone: LogLevelType[] = [];
-  
-  public constructor(options: Partial<AppOptions>) {
+
+  protected constructor(options: Partial<AppOptions>) {
     this._options = { ...this._defaultOptions, ...options };
     this._options.silent = this._options.silent === true ?
       [...this._silentAll] :
-      this._options.silent === false ? 
+      this._options.silent === false ?
         [...this._silentNone] :
         [...this._options.silent];
 
     // @ts-ignore Intended.
     console.assert(this._options.silent !== false && this._options.silent !== true, "Silent should not be a boolean.");
-    
+
     this._defaultSilentSetting = [...this._options.silent] as LogLevelType[];
-    this._dbLogger = new Sqlite3Logger2(this._options.dbName);
+
     this._prune = false;
     this._useColors = this._options?.useColor || false;
     this._useColors ? colors.enable() : colors.disable();
+  }
+
+  abstract debug(tags: string[], msg: string): Promise<void>;
+
+  abstract error(tags: string[], msg: string): Promise<void>;
+
+  abstract info(tags: string[], msg: string): Promise<void>;
+
+  abstract log(tags: string[], msg: string): Promise<void>;
+
+  abstract time(name: string, tags: string[], msg: string): Promise<void>;
+
+  abstract timeEnd(name: string, tags: string[], msg: string): Promise<void>;
+
+  abstract warn(tags: string[], msg: string): Promise<void>;
+}
+
+//@ts-ignore Old implementation, retaining.
+class BetterLog extends PL implements IPersistedLog {
+
+  private readonly _dbLogger: Sqlite3Logger2;
+
+  private readonly _silentAll: LogLevelType[] = ["info", "warn", "debug", "error", "time"];
+  private readonly _silentNone: LogLevelType[] = [];
+  
+  public constructor(options: Partial<AppOptions>) {
+    super(options);
+    this._dbLogger = new Sqlite3Logger2(this._options.dbName);
   }
 
   protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
@@ -136,40 +166,15 @@ class BetterLog implements IPersistedLog {
   }
 }
 
-class BetterLog2 implements IPersistedLog {
-  private _options: Omit<AppOptions, "dbName">;
-  private readonly _defaultOptions: Omit<AppOptions, "dbName"> = {
-    appTitle: "BetterLogs",
-    usePrefix: false,
-    silent: [],
-    prune: 10,
-    useColor: true,
-  };
+class BetterLog2 extends PL implements IPersistedLog {
+
   private readonly _dbLogger: IBetterLogLogger;
   private readonly _dbInitPromise: Promise<unknown>;
-  private _useColors: boolean;
-  private _prune: boolean;
-  private _defaultSilentSetting:LogLevelType[];
-  private readonly _silentAll: LogLevelType[] = ["info", "warn", "debug", "error", "time"];
-  private readonly _silentNone: LogLevelType[] = [];
 
   public constructor(options: Partial<AppOptions>) {
-    this._options = { ...this._defaultOptions, ...options };
-    this._options.silent = this._options.silent === true ?
-      [...this._silentAll] :
-      this._options.silent === false ?
-        [...this._silentNone] :
-        [...this._options.silent];
-
-    // @ts-ignore Intended.
-    console.assert(this._options.silent !== false && this._options.silent !== true, "Silent should not be a boolean.");
-
-    this._defaultSilentSetting = [...this._options.silent] as LogLevelType[];
+    super(options);
     this._dbLogger = new MySqlLogger();
     this._dbInitPromise = this._dbLogger.createDatabase();
-    this._prune = false;
-    this._useColors = this._options?.useColor || false;
-    this._useColors ? colors.enable() : colors.disable();
   }
 
   protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
