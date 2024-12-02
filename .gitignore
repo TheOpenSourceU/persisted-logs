@@ -12,3 +12,6 @@ temp/
 /dist/test.d.ts
 /dist/test.js
 /dist/test.mjs
+
+*.env
+.env
