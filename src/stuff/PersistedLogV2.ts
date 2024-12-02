@@ -10,12 +10,15 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
   private readonly _dbLogger: IDBLogger;
   private readonly _dbInitPromise: Promise<unknown>;
   private _bootstrapped: boolean;
+  private readonly _baseTags: string[];
 
   public constructor(options: Partial<AppOptions>) {
     super(options);
     this._bootstrapped = false;
     this._dbLogger = new MySqlLogger();
     this._dbInitPromise = this._dbLogger.createDatabase();
+
+    this._baseTags = [this.constructor.name, this._options.appTitle];
   }
 
   protected async bootstrapDatabase() {
@@ -25,7 +28,7 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
     await this._dbLogger.createDatabase();
     const data = {
       level: "debug",
-      tags: ['internal', this.constructor.name, 'bootstrapDatabase'],
+      tags: ['internal', 'bootstrapDatabase', ...this._baseTags],
       message: "bootstrapDatabase completed."
     } as LogRecordType;
     await this._dbLogger.RecordLog(data);
@@ -33,7 +36,7 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
 
   protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
     await this.bootstrapDatabase();
-    await this._dbLogger.RecordLog({ level, tags, message: msg });
+    await this._dbLogger.RecordLog({ level, tags: [...tags, ...this._baseTags], message: msg });
   }
 
   protected formatTags(tags: string[]): string {

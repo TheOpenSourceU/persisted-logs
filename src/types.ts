@@ -5,7 +5,11 @@ export type LogLevelType = "warn" | "info" | "error" | "debug" | "time";
 export type DataStoreType = ":memory:" | string;
 
 export type AppOptions = {
-  dbName: string;
+  appTitle: string;
+
+  /** @deprecated */
+  dbName?: string;
+
   usePrefix: boolean;
   useColor: boolean;
 
@@ -14,8 +18,8 @@ export type AppOptions = {
    * Otherwise skip the levels that are in the array.
    */
   silent: boolean | LogLevelType[];
-  appTitle: string;
-  prune: number; // Restricted to positive number
+
+  prune: number; // TODO: Restricted to positive number; intended is age of record but what scale??
 }
 
 export type LogRecordType = {
