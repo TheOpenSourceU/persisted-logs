@@ -1,12 +1,25 @@
 # persisted-logs - A Persistent Logger
 
-A lightweight, efficient logging system designed for both server
-environments and command-line interface (CLI) applications. Persistent
-Logger outputs logs to the console and stores them in a SQLite database for
-easy retrieval and management. Ideal for developers who value long-term data
-persistence and the flexibility of SQL for data manipulation.
+A unique logging library that records logs 
+to both the console and a database of your choice.
+
+From an in-memory Sqlite database to a full-blown RDBMS such as 
+MySQL or postgres.
+TypedOrm is used to create RDBMS flexibility. 
+
+## Motivation 
+
+Create a queryable log-pool for your application without
+the need for specialized APIs, dependencies, or cloud services. 
+
+Just a database connection of some sort.
+
+The Longer term goal is to provide a built-in web-ish UI or REST interface to 
+search and filter logs including dynamic `tail`-like functionality. 
 
 ## Features
+
+(_pending re-write_)
 
 - **Console & SQLite Logging**: Seamlessly logs messages to both the console and a SQLite database.
 - **Searchable Logs**: Leverage SQL to easily search and filter log data.
@@ -15,6 +28,8 @@ persistence and the flexibility of SQL for data manipulation.
   with customizable settings to manage data retention according to your needs.
 
 ## Getting Started
+
+(_pending re-write_)
 
 ### Targets
 

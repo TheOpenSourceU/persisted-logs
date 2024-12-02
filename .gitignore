@@ -1,7 +1,17 @@
-/node_modules/
-.idea
-dist
-*.sqlite
+.idea/
+.vscode/
+node_modules/
+build/
+tmp/
+temp/
+/dist/app.d.mts
+/dist/app.d.ts
+/dist/app.js
+/dist/app.mjs
+/dist/test.d.mts
+/dist/test.d.ts
+/dist/test.js
+/dist/test.mjs
 
-*.db
-*.log
+*.env
+.env
