@@ -1,25 +1,41 @@
+import colors from "colors";
 import { _PersistedLog } from "./_PersistedLog";
 import { IPersistedLog } from "./IPersistedLog";
 import { IDBLogger } from "./IDBLogger";
-import { AppOptions, LogLevelType } from "../types";
+import type { AppOptions, LogLevelType, LogRecordType } from "../types";
 import MySqlLogger from "../MySqlLogger";
-import colors from "colors";
 
 export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
 
   private readonly _dbLogger: IDBLogger;
   private readonly _dbInitPromise: Promise<unknown>;
+  private _bootstrapped: boolean;
 
   public constructor(options: Partial<AppOptions>) {
     super(options);
+    this._bootstrapped = false;
     this._dbLogger = new MySqlLogger();
     this._dbInitPromise = this._dbLogger.createDatabase();
   }
 
-  protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
+  protected async bootstrapDatabase() {
     await this._dbInitPromise;
+    if(this._bootstrapped) return;
+    this._bootstrapped = true;
+    await this._dbLogger.createDatabase();
+    const data = {
+      level: "debug",
+      tags: ['internal', this.constructor.name, 'bootstrapDatabase'],
+      message: "bootstrapDatabase completed."
+    } as LogRecordType;
+    await this._dbLogger.RecordLog(data);
+  }
+
+  protected async persistLog(level: LogLevelType, tags: string[], msg: string): Promise<void> {
+    await this.bootstrapDatabase();
     await this._dbLogger.RecordLog({ level, tags, message: msg });
   }
+
   protected formatTags(tags: string[]): string {
     const tagsString = tags.join(";");
     return `\t[${tagsString}]\t`;
@@ -81,7 +97,7 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
   }
 
   public async Close() {
-    await this._dbInitPromise;
+    await this.bootstrapDatabase();
     await this._dbLogger.Close();
   }
 }
