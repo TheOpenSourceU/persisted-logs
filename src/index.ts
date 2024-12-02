@@ -37,7 +37,9 @@ import BetterLog2 from "./app";
     }
   };
 
-  await outputAll();
+  await outputAll(-1);
+
+
 
   try {
     for (let i = 0; i < 100; i++) {

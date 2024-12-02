@@ -1,4 +1,4 @@
-import SQL from '../SQL';
+import SQL from '../stuff/SQL';
 
 describe('SQL.ts Constants', () => {
   it('logLevelTable should contain SQL for creating log_level table', () => {

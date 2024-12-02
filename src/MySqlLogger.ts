@@ -1,39 +1,13 @@
-import { IBetterLogLogger } from "./IBetterLogLogger";
-import { RunResult } from "sqlite3";
-import { LogRecordType } from "./types";
-import { TypeOrmDataSource } from "./TypeOrmDataSource"
 import { DataSource } from "typeorm";
-import { Log } from "./entity/Log";
-import { Tag } from "./entity/Tag";
-import { LogLevel } from "./entity/LogLevel";
-import { log } from "node:util";
+import { RunResult } from "sqlite3";
+import { IDBLogger } from "./stuff";
+import type { LogRecordType } from "./types";
+import { TypeOrmDataSource } from "./orm/TypeOrmDataSource"
+import { Log, Tag,LogLevel } from "./orm/entity";
 
-// .then(async () => {
-//
-//   console.log("Inserting a new user into the database...")
-//   const user = new User()
-//   user.firstName = "Timber"
-//   user.lastName = "Saw"
-//   user.age = 25
-//   await AppDataSource.manager.save(user)
-//   console.log("Saved a new user with id: " + user.id)
-//
-//   console.log("Loading users from the database...")
-//   const users = await AppDataSource.manager.find(User)
-//   console.log("Loaded users: ", users)
-//
-//   console.log("Here you can setup and run express / fastify / any other framework.")
-//
-// }).catch(error => console.log(error))
-
-
-
-
-
-export default class MySqlLogger implements IBetterLogLogger {
+export default class MySqlLogger implements IDBLogger {
   // @ts-ignore Intended
   private _db: DataSource;
-
   // @ts-ignore Intended
   private _logLevels: LogLevel[];
 
@@ -47,11 +21,6 @@ export default class MySqlLogger implements IBetterLogLogger {
   }
 
   public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
-    // const log = new Log();
-    // log.message = message;
-    // log.tags = [];
-    // log.logLevel = this._logLevels.find(itm => itm.level === level) as LogLevel;
-    // log.createdOn = new Date();
     console.time('start of transaction RecordLog');
 
     await this._db.manager.transaction(async () => {

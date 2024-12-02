@@ -1,14 +1,14 @@
 import { CommonType, DataStoreType, LogLevelType, LogRecordType } from "./types";
-import SQL from "./SQL";
+import SQL from "./stuff/SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
 import WrappedError from "./WrappedError";
-import { IBetterLogLogger } from "./IBetterLogLogger";
+import { IDBLogger } from "./stuff/IDBLogger";
 
 /**
  * Logger that logs to sqlite3 database.
  */
-export default class Sqlite3Logger2 implements IBetterLogLogger {
+export default class Sqlite3Logger2 implements IDBLogger {
   private readonly _dbPath: DataStoreType;
   private _db: AsyncDatabase | undefined;
   

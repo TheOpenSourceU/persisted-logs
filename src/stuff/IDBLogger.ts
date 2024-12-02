@@ -1,7 +1,8 @@
-import { LogRecordType } from "./types";
+import { LogRecordType } from "../types";
 import { RunResult } from "sqlite3";
 
-export interface IBetterLogLogger {
+/** Database Logger Interface */
+export interface IDBLogger {
   createDatabase(): Promise<void>;
 
   RecordLog({ level, tags, message }: LogRecordType): Promise<void>;
