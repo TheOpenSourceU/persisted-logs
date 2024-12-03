@@ -3,14 +3,19 @@ import { RunResult } from "sqlite3";
 import { IDBLogger } from "./stuff";
 import type { AppOptions, LogRecordType } from "./types";
 import { TypeOrmDataSource } from "./orm/TypeOrmDataSource"
-import { Log, Tag,LogLevel } from "./orm/entity";
+import { Log, Tag, LogLevel, App } from "./orm/entity";
 
 export default class MySqlLogger implements IDBLogger {
   // @ts-ignore Intended
   private _db: DataSource;
   // @ts-ignore Intended
   private _logLevels: LogLevel[];
+  private readonly _currentApp: App;
 
+  public constructor() {
+    this._currentApp = new App();
+    this._logLevels = [];
+  }
   public async Close(): Promise<void> {
     await this._db.destroy();
     return;
@@ -91,7 +96,17 @@ export default class MySqlLogger implements IDBLogger {
 
   public async createDatabase(options: Partial<AppOptions>): Promise<void> {
     this._db = await TypeOrmDataSource.initialize();
-    await this.ensureLogLevels(); // Ensure the logLevels exist
+    await Promise.all([
+      this.ensureLogLevels(),
+      this.recordAppInstance(options)
+    ]);
+  }
+
+  protected async recordAppInstance(options: Partial<AppOptions>) {
+    const now = Date.now();
+    this._currentApp.name = options.appTitle ? `${options.appTitle}@${now.toString(16)}-${now.toString(12)}` : `app-${now.toString(16)}-${now.toString(12)}`;
+    this._currentApp.logs = [];
+    await this._db.manager.insert(App, this._currentApp);
   }
 
   public async findTagIdOrCreate(tag: string): Promise<number> {

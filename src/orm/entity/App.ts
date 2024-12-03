@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Log } from "./Log";
 
 @Entity()
 export class App {
@@ -7,4 +8,7 @@ export class App {
 
   @Column()
   declare name: string;
+
+  @Column()
+  declare logs: Log[];
 }
