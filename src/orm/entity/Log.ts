@@ -21,6 +21,7 @@ export class Log {
   @ManyToOne(() => LogLevel, logLevel => logLevel.logs, { cascade: true })
   declare logLevel: LogLevel;
 
+  // This is the many and App is the One.
   @ManyToOne(() => App, app => app.logs, { cascade: true })
   declare app: App;
 

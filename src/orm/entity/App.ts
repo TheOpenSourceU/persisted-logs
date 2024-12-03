@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Log } from "./Log";
 
 @Entity()
@@ -9,6 +9,7 @@ export class App {
   @Column()
   declare name: string;
 
-  @Column()
+  // I see. This is the one; Log is the many.
+  @OneToMany(() => Log, log => log.app)
   declare logs: Log[];
 }

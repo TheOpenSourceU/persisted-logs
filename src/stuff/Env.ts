@@ -1,3 +1,4 @@
+import {config} from "dotenv"; config();
 type SupportedDatabasePlatformType = "mysql" | "mariadb" | "postgres" | "sqlite"
 
 const Env = {
@@ -14,6 +15,7 @@ const Env = {
 };
 
 function ReloadEnvironmentVariables() {
+  config();
   const {
     NODE_ENV,
 
@@ -28,9 +30,9 @@ function ReloadEnvironmentVariables() {
   Env.IsDev = NODE_ENV === "development";
 
   Env.TypeOrmType = (TYPEORM_TYPE ?? Env.TypeOrmType) as SupportedDatabasePlatformType
-  Env.TypeOrmHost = TYPEORM_HOST ?? Env.TypeOrmType ?? "localhost";
+  Env.TypeOrmHost = TYPEORM_HOST ?? Env.TypeOrmHost ?? "localhost";
 
-  if(Number.isInteger(TYPEORM_PORT)) {
+  if(!isNaN(parseInt(TYPEORM_PORT as string))) {
     Env.TypeOrmPort = parseInt(TYPEORM_PORT as string) ?? Env.TypeOrmPort;
   } else {
     Env.TypeOrmPort = Env.TypeOrmPort ?? 3306;
