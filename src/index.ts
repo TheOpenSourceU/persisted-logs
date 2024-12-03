@@ -1,6 +1,8 @@
 import BetterLog2 from "./app";
 
-
+/**
+ * This is a sort of test function. It exercises the logging methods.
+ */
 (async function() {
   const bl = new BetterLog2({});
   try {
@@ -42,7 +44,7 @@ import BetterLog2 from "./app";
 
 
   try {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 1; i < 100; i++) {
       await outputAll(i);
     }
   } catch(er) {

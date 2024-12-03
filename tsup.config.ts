@@ -1,10 +1,10 @@
-import { defineConfig, Options } from "tsup";
+import { defineConfig } from "tsup";
 
 const env = process.env?.NODE_ENV || 'development';
 
 export default defineConfig({
   clean: true, // clean up the dist folder
-  entry: ["src/app.ts", "src/test.ts"],
+  entry: ["src/app.ts"],
   format: ["esm", "cjs"], // Build for commonJS and ESmodules
   dts: true, // Generate declaration file (.d.ts)
   splitting: false,
