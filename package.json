@@ -9,7 +9,7 @@
       "test": "jest",
       "build": "tsup",
       "prepublish": "NODE_ENV=production npm run build",
-      "publish": "NODE_ENV=production npm publish --dry-run",
+      "publish": "npm publish",
       "start:_": "ts-node src/test.ts",
       "start": "ts-node src/index.ts",
       "typeorm": "typeorm-ts-node-commonjs"
