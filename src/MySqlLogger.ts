@@ -26,15 +26,13 @@ export default class MySqlLogger implements IDBLogger {
   }
 
   public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
-    console.time('start of transaction RecordLog');
-
     await this._db.manager.transaction(async () => {
 
-      const currentTagCount = async () => await this._db.manager.count(Tag);
-      const currentLogCount = async () => await this._db.manager.count(Log);
+      // const currentTagCount = async () => await this._db.manager.count(Tag);
+      // const currentLogCount = async () => await this._db.manager.count(Log);
 
-      console.log('currentTagCount', await currentTagCount());
-      console.log('currentLogCount', await currentLogCount());
+      // console.log('currentTagCount', await currentTagCount());
+      // console.log('currentLogCount', await currentLogCount());
 
       const tagsList: Tag[] = [];
       const tagIdSet = new Set<number>();
@@ -50,14 +48,11 @@ export default class MySqlLogger implements IDBLogger {
         message,
         tags: tagsList,
         logLevel: this._logLevels.find(itm => itm.level === level) as LogLevel,
-        createdOn: new Date()
+        createdOn: new Date(),
+        app: this._currentApp
       };
-      console.log('data', data);
-      const inserted = await this._db.manager.insert(Log, data);
-      console.debug("inserted", inserted);
+      await this._db.manager.insert(Log, data);
     });
-    console.debug("end of transaction RecordLog");
-    console.timeEnd('start of transaction RecordLog');
   }
 
   public async createTag(tag: string): Promise<number> {
