@@ -43,7 +43,7 @@ import BetterLog2 from "./app";
 
   await outputAll(-1);
 
-
+  // TODO: Add test for the Log levels. How to Change it? What should the API look like?
 
   try {
     for (let i = 1; i < 100; i++) {

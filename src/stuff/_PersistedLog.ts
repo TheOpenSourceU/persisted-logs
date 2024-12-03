@@ -7,8 +7,9 @@ export abstract class _PersistedLog implements IPersistedLog {
   protected _useColors: boolean;
   protected _defaultSilentSetting: LogLevelType[];
 
-  protected readonly _silentAll: LogLevelType[] = ["info", "warn", "debug", "error", "time"];
-  protected readonly _silentNone: LogLevelType[] = [];
+  protected readonly _silentAll: Readonly<LogLevelType[]> = ["info", "warn", "debug", "error", "time"];
+  protected readonly _silentNone: Readonly<LogLevelType[]> = [];
+  public static readonly SilentAll: Readonly<LogLevelType[]> = ["info", "warn", "debug", "error", "time"];
 
   protected _options: AppOptions;
   protected readonly _defaultOptions: AppOptions = {
