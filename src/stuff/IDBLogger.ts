@@ -1,9 +1,9 @@
-import { LogRecordType } from "../types";
+import { AppOptions, LogRecordType } from "../types";
 import { RunResult } from "sqlite3";
 
 /** Database Logger Interface */
 export interface IDBLogger {
-  createDatabase(): Promise<void>;
+  createDatabase(options: Partial<AppOptions>): Promise<void>;
 
   RecordLog({ level, tags, message }: LogRecordType): Promise<void>;
 

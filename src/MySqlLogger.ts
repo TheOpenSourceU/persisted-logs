@@ -1,7 +1,7 @@
 import { DataSource } from "typeorm";
 import { RunResult } from "sqlite3";
 import { IDBLogger } from "./stuff";
-import type { LogRecordType } from "./types";
+import type { AppOptions, LogRecordType } from "./types";
 import { TypeOrmDataSource } from "./orm/TypeOrmDataSource"
 import { Log, Tag,LogLevel } from "./orm/entity";
 
@@ -75,10 +75,7 @@ export default class MySqlLogger implements IDBLogger {
     return tagIds;
   }
 
-  public async createDatabase(): Promise<void> {
-    this._db = await TypeOrmDataSource.initialize();
-    // Ensure the logLevels exist
-
+  private async ensureLogLevels() {
     const logLevels = await this._db.manager.find(LogLevel);
     if(logLevels.length === 0) {
       // LogLevelType
@@ -90,6 +87,11 @@ export default class MySqlLogger implements IDBLogger {
       }
     }
     this._logLevels = await this._db.manager.find(LogLevel, { order: { id: "ASC" } });
+  }
+
+  public async createDatabase(options: Partial<AppOptions>): Promise<void> {
+    this._db = await TypeOrmDataSource.initialize();
+    await this.ensureLogLevels(); // Ensure the logLevels exist
   }
 
   public async findTagIdOrCreate(tag: string): Promise<number> {

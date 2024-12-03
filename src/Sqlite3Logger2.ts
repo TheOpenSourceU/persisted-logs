@@ -1,9 +1,9 @@
-import { CommonType, DataStoreType, LogLevelType, LogRecordType } from "./types";
-import SQL from "./stuff/SQL";
 import { AsyncDatabase } from "promised-sqlite3";
 import { RunResult } from "sqlite3";
+import type { AppOptions, CommonType, DataStoreType, LogLevelType, LogRecordType } from "./types";
+import SQL from "./stuff/SQL";
 import WrappedError from "./WrappedError";
-import { IDBLogger } from "./stuff/IDBLogger";
+import { IDBLogger } from "./stuff";
 
 /**
  * Logger that logs to sqlite3 database.
@@ -24,7 +24,7 @@ export default class Sqlite3Logger2 implements IDBLogger {
     time: 5
   };
 
-  async createDatabase() {
+  async createDatabase(options: Partial<AppOptions>): Promise<void> {
     const tableExists = await this.executeSql<{ name: string }>(SQL.stmtLogTableExists, undefined, true) as {
       name: string
     }[];
@@ -52,7 +52,7 @@ export default class Sqlite3Logger2 implements IDBLogger {
     try {
       if (!message || !message.trim()) return; //TODO: verify bug fix. 
 
-      await this.createDatabase();
+      await this.createDatabase({});
 
       const params = {
         $level: Sqlite3Logger2.errorLogMap[level],
