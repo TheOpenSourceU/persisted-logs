@@ -1,6 +1,6 @@
 {
    "name": "persisted-logs",
-   "version": "3.0.0-alpha.20241202",
+   "version": "3.0.1-alpha.20241202",
    "description": "(BetterLogs) An always persisted logging library.",
    "main": "dist/app.js",
    "types": "dist/app.d.ts",
@@ -9,7 +9,6 @@
       "test": "jest",
       "build": "tsup",
       "prepublish": "NODE_ENV=production npm run build",
-      "publish": "npm publish",
       "start:_": "ts-node src/test.ts",
       "start": "ts-node src/index.ts",
       "typeorm": "typeorm-ts-node-commonjs"
