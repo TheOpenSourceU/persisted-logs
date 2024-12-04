@@ -1,6 +1,6 @@
-import { IPersistedLog } from "./IPersistedLog";
-import { AppOptions, LogLevelType } from "../types";
 import colors from "colors";
+import type { AppOptions, LogLevelType } from "../types";
+import { IPersistedLog } from "./IPersistedLog";
 
 export abstract class _PersistedLog implements IPersistedLog {
   protected _prune: boolean;

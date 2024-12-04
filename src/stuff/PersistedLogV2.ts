@@ -1,12 +1,12 @@
 import colors from "colors";
+import type { AppOptions, LogLevelType, LogRecordType } from "../types";
+import MySqlLogger from "./MySqlLogger";
 import { _PersistedLog } from "./_PersistedLog";
 import { IPersistedLog } from "./IPersistedLog";
 import { IDBLogger } from "./IDBLogger";
-import type { AppOptions, LogLevelType, LogRecordType } from "../types";
-import MySqlLogger from "../MySqlLogger";
+
 
 export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
-
   private readonly _dbLogger: IDBLogger;
   private readonly _dbInitPromise: Promise<unknown>;
   private _bootstrapped: boolean;

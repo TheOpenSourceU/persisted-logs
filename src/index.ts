@@ -1,10 +1,10 @@
-import BetterLog2 from "./app";
+import PersistedLogV2 from "./app";
 
 /**
  * This is a sort of test function. It exercises the logging methods.
  */
 (async function() {
-  const bl = new BetterLog2({
+  const bl = new PersistedLogV2({
     appTitle: `index-test-${new Date().toJSON()}`
   });
   try {

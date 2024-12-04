@@ -1,6 +1,8 @@
 import "reflect-metadata";
-import {config} from "dotenv";
-import {PersistedLogV2, IPersistedLog, IDBLogger} from "./stuff";
+import { config } from "dotenv";
+import type { IDBLogger } from "./stuff/IDBLogger";
+import type { IPersistedLog } from "./stuff/IPersistedLog"
+import { PersistedLogV2 } from "./stuff/PersistedLogV2";
 
 const dotConfigOutput = config();
 if(dotConfigOutput.parsed) {
@@ -17,4 +19,4 @@ if(dotConfigOutput.parsed) {
 }
 
 export default PersistedLogV2;
-export {IPersistedLog, IDBLogger};
+export {PersistedLogV2, IDBLogger, IPersistedLog};

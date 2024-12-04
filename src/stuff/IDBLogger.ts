@@ -1,5 +1,4 @@
-import { AppOptions, LogRecordType } from "../types";
-import { RunResult } from "sqlite3";
+import type { AppOptions, LogRecordType } from "../types";
 
 /** Database Logger Interface */
 export interface IDBLogger {
@@ -9,7 +8,7 @@ export interface IDBLogger {
 
   Close(): Promise<void>;
 
-  PruneLogs(prune: number): Promise<RunResult | any[] | false>;
+  PruneLogs(prune: number): Promise<any[] | false>;
 
   convertToTagList(tags: string[]): Promise<Set<number>>;
 

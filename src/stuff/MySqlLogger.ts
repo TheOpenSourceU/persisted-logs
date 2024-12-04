@@ -1,39 +1,36 @@
+import { boundMethod } from "autobind-decorator";
 import { DataSource } from "typeorm";
-import { RunResult } from "sqlite3";
-import { IDBLogger } from "./stuff";
-import type { AppOptions, LogRecordType } from "./types";
-import { TypeOrmDataSource } from "./orm/TypeOrmDataSource"
-import { Log, Tag, LogLevel, App } from "./orm/entity";
+import type { AppOptions, LogRecordType } from "../types";
+import { TypeOrmDataSource } from "../orm/TypeOrmDataSource"
+import { Log, Tag, LogLevel, App } from "../orm/entity";
+import { IDBLogger } from "./IDBLogger";
+
+
 
 export default class MySqlLogger implements IDBLogger {
-  // @ts-ignore Intended
-  private _db: DataSource;
-  // @ts-ignore Intended
+  private _db:DataSource;
   private _logLevels: LogLevel[];
-  private readonly _currentApp: App;
+  private _currentApp?: App;
 
   public constructor() {
-    this._currentApp = new App();
+    this._db = TypeOrmDataSource;
     this._logLevels = [];
   }
+
+  @boundMethod
   public async Close(): Promise<void> {
     await this._db.destroy();
     return;
   }
 
-  public async PruneLogs(prune: number): Promise<false | any[] | RunResult> {
+  @boundMethod
+  public async PruneLogs(prune: number): Promise<false | any[]> {
     return Promise.resolve(false);
   }
 
+  @boundMethod
   public async RecordLog({ level, tags, message }: LogRecordType): Promise<void> {
     await this._db.manager.transaction(async () => {
-
-      // const currentTagCount = async () => await this._db.manager.count(Tag);
-      // const currentLogCount = async () => await this._db.manager.count(Log);
-
-      // console.log('currentTagCount', await currentTagCount());
-      // console.log('currentLogCount', await currentLogCount());
-
       const tagsList: Tag[] = [];
       const tagIdSet = new Set<number>();
       for (const tag of tags) {
@@ -55,11 +52,12 @@ export default class MySqlLogger implements IDBLogger {
     });
   }
 
+  @boundMethod
   public async createTag(tag: string): Promise<number> {
     return await this.findTagIdOrCreate(tag);
   }
 
-
+  @boundMethod
   public async convertToTagList(tags: string[]): Promise<Set<number>> {
     const tagIds = new Set<number>();
     for(const tag of tags) {
@@ -75,6 +73,7 @@ export default class MySqlLogger implements IDBLogger {
     return tagIds;
   }
 
+  @boundMethod
   private async ensureLogLevels() {
     const logLevels = await this._db.manager.find(LogLevel);
     if(logLevels.length === 0) {
@@ -89,6 +88,7 @@ export default class MySqlLogger implements IDBLogger {
     this._logLevels = await this._db.manager.find(LogLevel, { order: { id: "ASC" } });
   }
 
+  @boundMethod
   public async createDatabase(options: Partial<AppOptions>): Promise<void> {
     this._db = await TypeOrmDataSource.initialize();
     await Promise.all([
@@ -97,13 +97,16 @@ export default class MySqlLogger implements IDBLogger {
     ]);
   }
 
+  @boundMethod
   protected async recordAppInstance(options: Partial<AppOptions>) {
     const now = Date.now();
+    this._currentApp = new App();
     this._currentApp.name = options.appTitle ? `${options.appTitle}@${now.toString(16)}-${now.toString(12)}` : `app-${now.toString(16)}-${now.toString(12)}`;
     this._currentApp.logs = [];
     await this._db.manager.insert(App, this._currentApp);
   }
 
+  @boundMethod
   public async findTagIdOrCreate(tag: string): Promise<number> {
     tag = (tag ?? "").trim().toLowerCase();
     if(!tag) return 0;
@@ -111,6 +114,7 @@ export default class MySqlLogger implements IDBLogger {
     return (await this._findTagIdOrCreate(tag))?.id!;
   }
 
+  @boundMethod
   public async _findTagIdOrCreate(tag: string): Promise<Tag | null> {
     tag = (tag ?? "").trim().toLowerCase();
     if(!tag) return null;

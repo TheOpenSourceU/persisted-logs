@@ -1,4 +1,4 @@
-import { LogLevelType } from "../types";
+import type { LogLevelType } from "../types";
 
 /** Interface to represent some console.* methods which are persisted. */
 export interface IPersistedLog {
