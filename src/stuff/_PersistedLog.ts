@@ -1,36 +1,37 @@
-import colors from "colors";
-import type { AppOptions, LogLevelType } from "../types";
-import { IPersistedLog } from "./IPersistedLog";
+import colors from 'colors';
+import type { AppOptions, LogLevelType } from '../types';
+import { IPersistedLog } from './IPersistedLog';
 
 export abstract class _PersistedLog implements IPersistedLog {
   protected _prune: boolean;
   protected _useColors: boolean;
   protected _defaultSilentSetting: LogLevelType[];
 
-  protected readonly _silentAll: Readonly<LogLevelType[]> = ["info", "warn", "debug", "error", "time"];
+  protected readonly _silentAll: Readonly<LogLevelType[]> = ['info', 'warn', 'debug', 'error', 'time'];
   protected readonly _silentNone: Readonly<LogLevelType[]> = [];
-  public static readonly SilentAll: Readonly<LogLevelType[]> = ["info", "warn", "debug", "error", "time"];
+  public static readonly SilentAll: Readonly<LogLevelType[]> = ['info', 'warn', 'debug', 'error', 'time'];
 
   protected _options: AppOptions;
   protected readonly _defaultOptions: AppOptions = {
-    appTitle: "BetterLogs",
-    dbName: "better-logs.db",
+    appTitle: 'BetterLogs',
+    dbName: 'better-logs.db',
     usePrefix: false,
     silent: [],
     prune: 10,
-    useColor: true
+    useColor: true,
   };
 
   protected constructor(options: Partial<AppOptions>) {
     this._options = { ...this._defaultOptions, ...options };
-    this._options.silent = this._options.silent === true ?
-      [...this._silentAll] :
-      this._options.silent === false ?
-        [...this._silentNone] :
-        [...this._options.silent];
+    this._options.silent =
+      this._options.silent === true
+        ? [...this._silentAll]
+        : this._options.silent === false
+          ? [...this._silentNone]
+          : [...this._options.silent];
 
     // @ts-ignore Intended.
-    console.assert(this._options.silent !== false && this._options.silent !== true, "Silent should not be a boolean.");
+    console.assert(this._options.silent !== false && this._options.silent !== true, 'Silent should not be a boolean.');
 
     this._defaultSilentSetting = [...this._options.silent] as LogLevelType[];
 

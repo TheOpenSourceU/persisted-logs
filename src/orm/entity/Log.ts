@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { LogLevel } from './LogLevel';
 import { Tag } from './Tag';
-import { App } from "./App";
+import { App } from './App';
 
 @Entity()
 export class Log {

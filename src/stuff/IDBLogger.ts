@@ -1,4 +1,4 @@
-import type { AppOptions, LogRecordType } from "../types";
+import type { AppOptions, LogRecordType } from '../types';
 
 /** Database Logger Interface */
 export interface IDBLogger {

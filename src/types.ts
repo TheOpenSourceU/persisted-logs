@@ -1,8 +1,8 @@
 export type CommonType = string | number | boolean | undefined;
 //export type CommonTypes = Record<string, CommonType> | CommonType[];
 
-export type LogLevelType = "warn" | "info" | "error" | "debug" | "time";
-export type DataStoreType = ":memory:" | string;
+export type LogLevelType = 'warn' | 'info' | 'error' | 'debug' | 'time';
+export type DataStoreType = ':memory:' | string;
 
 export type AppOptions = {
   appTitle: string;
@@ -20,10 +20,10 @@ export type AppOptions = {
   silent: boolean | LogLevelType[];
 
   prune: number; // TODO: Restricted to positive number; intended is age of record but what scale??
-}
+};
 
 export type LogRecordType = {
   level: LogLevelType;
   tags: string[];
   message: string;
-}
+};

@@ -1,10 +1,9 @@
-import colors from "colors";
-import type { AppOptions, LogLevelType, LogRecordType } from "../types";
-import MySqlLogger from "./MySqlLogger";
-import { _PersistedLog } from "./_PersistedLog";
-import { IPersistedLog } from "./IPersistedLog";
-import { IDBLogger } from "./IDBLogger";
-
+import colors from 'colors';
+import type { AppOptions, LogLevelType, LogRecordType } from '../types';
+import MySqlLogger from './MySqlLogger';
+import { _PersistedLog } from './_PersistedLog';
+import { IPersistedLog } from './IPersistedLog';
+import { IDBLogger } from './IDBLogger';
 
 export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
   private readonly _dbLogger: IDBLogger;
@@ -23,17 +22,15 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
 
   protected async bootstrapDatabase() {
     await this._dbInitPromise;
-    if(this._bootstrapped) return;
+    if (this._bootstrapped) return;
     this._bootstrapped = true;
     await this._dbLogger.createDatabase(this._options);
     const data = {
-      level: "debug",
+      level: 'debug',
       tags: ['internal', 'bootstrapDatabase', ...this._baseTags],
-      message: "bootstrapDatabase completed."
+      message: 'bootstrapDatabase completed.',
     } as LogRecordType;
     await this._dbLogger.RecordLog(data);
-
-
 
     // TODO: Log the App Name. // this._options.appTitle
   }
@@ -44,24 +41,24 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
   }
 
   protected formatTags(tags: string[]): string {
-    const tagsString = tags.join(";");
+    const tagsString = tags.join(';');
     return `\t[${tagsString}]\t`;
   }
 
   public async debug(tags: string[], msg: string) {
-    if (!this.silentList.includes("debug")) {
+    if (!this.silentList.includes('debug')) {
       const message = `DEBUG: ${this.formatTags(tags)} ${msg}`;
       console.log(this._useColors ? colors.grey(message) : message);
     }
-    await this.persistLog("debug", tags, msg);
+    await this.persistLog('debug', tags, msg);
   }
 
   public async error(tags: string[], msg: string) {
-    if (!this.silentList.includes("error")) {
+    if (!this.silentList.includes('error')) {
       const message = `ERROR: ${this.formatTags(tags)} ${msg}\t${new Date().toJSON()}]`;
       console.error(this._useColors ? colors.red(message) : message);
     }
-    await this.persistLog("error", tags, msg);
+    await this.persistLog('error', tags, msg);
   }
 
   public async log(tags: string[], msg: string) {
@@ -69,23 +66,23 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
   }
 
   public async info(tags: string[], msg: string) {
-    if (!this.silentList.includes("info")) {
+    if (!this.silentList.includes('info')) {
       const message = `INFO: ${this.formatTags(tags)} ${msg}`;
       console.log(this._useColors ? colors.green(message) : message);
     }
-    return await this.persistLog("info", tags, msg);
+    return await this.persistLog('info', tags, msg);
   }
 
   public async warn(tags: string[], msg: string) {
-    if (!this.silentList.includes("warn")) {
+    if (!this.silentList.includes('warn')) {
       const message = `WARN: ${this.formatTags(tags)} ${msg}`;
       console.log(this._useColors ? colors.yellow(message) : message);
     }
-    return await this.persistLog("warn", tags, msg);
+    return await this.persistLog('warn', tags, msg);
   }
 
-  public async time(name:string, tags: string[], msg: string) {
-    if (!this.silentList.includes("time")) {
+  public async time(name: string, tags: string[], msg: string) {
+    if (!this.silentList.includes('time')) {
       const message = `TIME: ${this.formatTags(tags)} ${msg}`;
       console.timeLog(name, this._useColors ? colors.cyan(message) : message);
     }
@@ -93,8 +90,8 @@ export class PersistedLogV2 extends _PersistedLog implements IPersistedLog {
     //  Think we need an internal timer or something. Cant' really get it from timeEnd.
     //await this.persistLog("time", tags, msg); //Tiem stamps are in the database.... High enough precision though?
   }
-  public async timeEnd(name:string, tags: string[], msg: string) {
-    if (!this.silentList.includes("time")) {
+  public async timeEnd(name: string, tags: string[], msg: string) {
+    if (!this.silentList.includes('time')) {
       console.timeEnd(name);
       const message = `TIME: ${this.formatTags(tags)} ${msg}`;
       console.log(this._useColors ? colors.cyan(message) : message);
