@@ -1,5 +1,3 @@
-import SQL from "./SQL";
-
 export * from "./IPersistedLog";
 export * from "./_PersistedLog";
 
