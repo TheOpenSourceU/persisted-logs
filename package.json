@@ -1,7 +1,7 @@
 {
    "name": "persisted-logs",
-   "version": "3.0.5-alpha.20241203",
-   "description": "(BetterLogs) An always persisted logging library.",
+   "version": "3.0.6-alpha.20241203",
+   "description": "An always persisted logging library.",
    "main": "dist/app.js",
    "types": "dist/app.d.ts",
    "scripts": {
