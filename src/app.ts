@@ -18,5 +18,4 @@ if (dotConfigOutput.parsed) {
   }
 }
 
-export default PersistedLogV2;
 export { PersistedLogV2, IDBLogger, IPersistedLog };
