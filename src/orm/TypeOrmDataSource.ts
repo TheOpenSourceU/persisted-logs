@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { App, Tag, Log, LogLevel } from './entity';
 import Env from '../stuff/Env';
 
