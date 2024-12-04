@@ -41,6 +41,8 @@ function ReloadEnvironmentVariables() {
   Env.TypeOrmUserName = TYPEORM_USERNAME ?? Env.TypeOrmUserName ?? "root";
   Env.TypeOrmPwd = TYPEORM_PASSWORD ?? Env.TypeOrmPwd ?? "root";
   Env.TypeOrmDatabase = TYPEORM_DATABASE ?? Env.TypeOrmDatabase ?? "betterlog_dev";
+
+  console.log('BetterLog', Env);
 }
 ReloadEnvironmentVariables();
 

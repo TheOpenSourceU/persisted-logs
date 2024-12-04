@@ -12,4 +12,7 @@ export class App {
   // I see. This is the one; Log is the many.
   @OneToMany(() => Log, log => log.app)
   declare logs: Log[];
+
+  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  declare createdOn: Date;
 }

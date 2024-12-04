@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Log } from './Log';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Tag {
@@ -9,7 +8,6 @@ export class Tag {
   @Column({ type: 'varchar', length: 999, nullable: false })
   declare tag: string;
 
-  // @ManyToMany(() => Log, log => log.tags)
-  // @JoinTable()
-  // declare logs: Log[];
+  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  declare createdOn: Date;
 }
